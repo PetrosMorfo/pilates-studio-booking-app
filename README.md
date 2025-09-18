@@ -35,5 +35,5 @@ This project is designed to streamline the scheduling process for a personal tra
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/trainer-booking-app.git
+   git clone https://github.com/PetrosMorfo/pilates-studio-booking-app.git
    cd trainer-booking-app
