@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>joinpilates — Design Directions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #1a1a18; padding: 2rem 1rem 6rem; }
+
+    .title-bar {
+      text-align: center;
+      margin-bottom: 3rem;
+      color: #a0a090;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .title-bar strong { display: block; font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; color: #d4d0c4; letter-spacing: 0; text-transform: none; margin-bottom: 0.4rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+    .concept {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .concept-label {
+      padding: 0.85rem 1.5rem;
+      background: #252521;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .concept-label span:first-child {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #777;
+    }
+    .swatches { display: flex; gap: 5px; }
+    .swatch { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+
+    /* ────────────────────────────────────────────────────────────
+       OPTION A — Soft Garden  (#86A788 palette)
+    ──────────────────────────────────────────────────────────── */
+    .a { background: #FFFDEC; }
+
+    .a .header {
+      background: #2D3520;
+      padding: 0 2rem;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .a .logo { font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: #FFFDEC; letter-spacing: 0.08em; text-transform: uppercase; }
+    .a .logo em { color: #FFCFCF; font-style: normal; }
+    .a .nav { display: flex; gap: 4px; }
+    .a .nav-link { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,253,236,0.5); padding: 0.35rem 0.8rem; border-radius: 4px; }
+    .a .nav-link.active { color: rgba(255,253,236,0.9); }
+    .a .nav-signout { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,207,207,0.7); padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid rgba(255,207,207,0.2); }
+
+    .a .body { padding: 2.5rem 2rem; }
+    .a .eyebrow { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #86A788; margin-bottom: 0.5rem; }
+    .a h1 { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; line-height: 1.1; color: #2D3520; margin-bottom: 0.6rem; }
+    .a h1 em { color: #86A788; }
+    .a .subtitle { font-size: 0.8rem; color: #7a8a72; max-width: 300px; line-height: 1.6; margin-bottom: 2rem; }
+
+    .a .date-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.65rem; margin-top: 1.5rem; }
+    .a .date-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #86A788; white-space: nowrap; }
+    .a .date-rule { flex: 1; height: 1px; background: #e6e0d0; }
+
+    .a .class-row {
+      background: #fff;
+      border: 1px solid #e8e2d4;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .a .class-row.booked { background: #f0f7f1; border-color: #c4ddc7; }
+    .a .time-col { width: 72px; flex-shrink: 0; }
+    .a .time-main { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; color: #2D3520; line-height: 1; }
+    .a .time-end { font-size: 0.65rem; color: #aaa8a0; }
+    .a .divider-v { width: 1px; height: 40px; background: #e8e2d4; flex-shrink: 0; }
+    .a .class-info { flex: 1; min-width: 0; }
+    .a .class-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: #2D3520; line-height: 1.2; margin-bottom: 0.2rem; }
+    .a .class-meta { font-size: 0.7rem; color: #8a9082; }
+    .a .spots-warn { color: #c07a6a; }
+    .a .class-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .a .badge-online { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 20px; background: #e8f4ea; color: #4a7a52; }
+    .a .badge-studio { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 20px; background: #ffe8e8; color: #8a4a4a; }
+    .a .badge-booked { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 20px; background: #c4ddc7; color: #2d5a35; }
+    .a .btn-book { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.45rem 0.9rem; border-radius: 5px; background: #2D3520; color: #FFFDEC; border: none; cursor: pointer; }
+    .a .btn-waitlist { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.45rem 0.9rem; border-radius: 5px; background: #FFCFCF; color: #7a3838; border: none; cursor: pointer; }
+    .a .btn-full { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.45rem 0.9rem; border-radius: 5px; background: #f4f0e8; color: #9a9888; border: 1px solid #ddd8cc; cursor: default; }
+
+    /* ────────────────────────────────────────────────────────────
+       OPTION B — Evergreen (current palette, refined)
+    ──────────────────────────────────────────────────────────── */
+    .b { background: #F0EDE8; }
+
+    .b .header {
+      background: #3A3D2E;
+      padding: 0 2rem;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .b .logo { font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: #F0EDE8; letter-spacing: 0.08em; text-transform: uppercase; }
+    .b .logo em { color: #C7A491; font-style: normal; }
+    .b .nav { display: flex; gap: 4px; }
+    .b .nav-link { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(240,237,232,0.5); padding: 0.35rem 0.8rem; border-radius: 4px; }
+    .b .nav-link.active { color: rgba(240,237,232,0.9); }
+    .b .nav-signout { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(199,164,145,0.75); padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid rgba(199,164,145,0.22); }
+
+    .b .body { padding: 2.5rem 2rem; }
+    .b .eyebrow { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #919682; margin-bottom: 0.5rem; }
+    .b h1 { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; line-height: 1.1; color: #3A3D2E; margin-bottom: 0.6rem; }
+    .b h1 em { color: #919682; }
+    .b .subtitle { font-size: 0.8rem; color: #919682; max-width: 300px; line-height: 1.6; margin-bottom: 2rem; }
+
+    .b .date-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.65rem; margin-top: 1.5rem; }
+    .b .date-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #919682; white-space: nowrap; }
+    .b .date-rule { flex: 1; height: 1px; background: #DDD8D0; }
+
+    .b .class-row {
+      background: #fff;
+      border: 1px solid #DDD8D0;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .b .class-row.booked { background: #EBF0EB; border-color: #C7CDBF; }
+    .b .time-col { width: 72px; flex-shrink: 0; }
+    .b .time-main { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; color: #3A3D2E; line-height: 1; }
+    .b .time-end { font-size: 0.65rem; color: #C7CDBF; }
+    .b .divider-v { width: 1px; height: 40px; background: #DDD8D0; flex-shrink: 0; }
+    .b .class-info { flex: 1; min-width: 0; }
+    .b .class-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: #3A3D2E; line-height: 1.2; margin-bottom: 0.2rem; }
+    .b .class-meta { font-size: 0.7rem; color: #919682; }
+    .b .spots-warn { color: #9E4E36; }
+    .b .class-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .b .badge-online { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 20px; background: #EBF0EB; color: #4a5040; }
+    .b .badge-studio { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 20px; background: #FAF1EE; color: #8a5244; }
+    .b .badge-booked { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 20px; background: #C7CDBF; color: #3A3D2E; }
+    .b .btn-book { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.45rem 0.9rem; border-radius: 5px; background: #595E48; color: #F0EDE8; border: none; cursor: pointer; }
+    .b .btn-waitlist { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.45rem 0.9rem; border-radius: 5px; background: #EECFCA; color: #7a4a3a; border: none; cursor: pointer; }
+    .b .btn-full { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.45rem 0.9rem; border-radius: 5px; background: #EBE6DF; color: #9a9888; border: 1px solid #DDD8D0; cursor: default; }
+
+    /* ── Login mockups ── */
+    .login-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 2.5rem auto 0;
+    }
+    @media (max-width: 900px) { .login-row { grid-template-columns: 1fr; } }
+
+    .login-preview { border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .login-preview .concept-label { background: #252521; border-bottom: 1px solid #333; }
+
+    .login-a { background: #FFFDEC; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; min-height: 440px; }
+    .login-b { background: #F0EDE8; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; min-height: 440px; }
+
+    .login-card-a {
+      background: #fff;
+      border: 1px solid #e8e2d4;
+      border-radius: 14px;
+      padding: 2.25rem 2.25rem;
+      width: 100%;
+      max-width: 330px;
+      box-shadow: 0 4px 24px rgba(45,53,32,0.08);
+    }
+    .login-card-b {
+      background: #fff;
+      border: 1px solid #DDD8D0;
+      border-radius: 14px;
+      padding: 2.25rem 2.25rem;
+      width: 100%;
+      max-width: 330px;
+      box-shadow: 0 4px 24px rgba(58,61,46,0.08);
+    }
+    .login-logo-a { font-family: 'DM Sans', sans-serif; font-size: 1.1rem; font-weight: 600; color: #2D3520; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; margin-bottom: 0.25rem; }
+    .login-logo-a em { color: #FFCFCF; font-style: normal; }
+    .login-logo-b { font-family: 'DM Sans', sans-serif; font-size: 1.1rem; font-weight: 600; color: #3A3D2E; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; margin-bottom: 0.25rem; }
+    .login-logo-b em { color: #C7A491; font-style: normal; }
+    .login-tagline { font-size: 0.68rem; color: #aaa; text-align: center; margin-bottom: 1.75rem; letter-spacing: 0.04em; }
+    .login-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .login-label-a { color: #b8c0b0; }
+    .login-label-b { color: #C7CDBF; }
+    .login-input-a { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #e0d8cc; border-radius: 6px; background: #FFFDEC; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #2D3520; outline: none; margin-bottom: 1rem; }
+    .login-input-b { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #DDD8D0; border-radius: 6px; background: #F0EDE8; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #3A3D2E; outline: none; margin-bottom: 1rem; }
+    .login-btn-a { width: 100%; padding: 0.75rem; background: #2D3520; color: #FFFDEC; border: none; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; margin-top: 0.25rem; }
+    .login-btn-b { width: 100%; padding: 0.75rem; background: #595E48; color: #F0EDE8; border: none; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; margin-top: 0.25rem; }
+
+    /* section header */
+    .section-header {
+      text-align: center;
+      color: #555;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin: 3rem 0 1.25rem;
+    }
+
+    /* palette swatches legend */
+    .palette-legend {
+      max-width: 1200px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .pal-group { display: flex; flex-direction: column; gap: 0.3rem; align-items: center; }
+    .pal-group span { font-size: 0.55rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; }
+    .pal-swatches { display: flex; gap: 4px; }
+    .pal-swatch { width: 28px; height: 28px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); }
+    .pal-label { font-size: 0.48rem; color: #444; margin-top: 0.2rem; text-align: center; }
+
+    .vs-divider { color: #444; font-size: 1.1rem; align-self: center; margin-top: 0.6rem; }
+  </style>
+</head>
+<body>
+
+  <div class="title-bar">
+    <strong>joinpilates — Design Directions</strong>
+    Two palette options · Schedule page + Login page mockups
+  </div>
+
+  <!-- Palette Legend -->
+  <div class="palette-legend" style="justify-content: center; gap: 3rem;">
+    <div class="pal-group">
+      <span>Option A — Soft Garden</span>
+      <div class="pal-swatches">
+        <div class="pal-swatch" style="background:#2D3520;" title="#2D3520"></div>
+        <div class="pal-swatch" style="background:#86A788;" title="#86A788"></div>
+        <div class="pal-swatch" style="background:#FFE2E2;" title="#FFE2E2"></div>
+        <div class="pal-swatch" style="background:#FFCFCF;" title="#FFCFCF"></div>
+        <div class="pal-swatch" style="background:#FFFDEC;" title="#FFFDEC"></div>
+      </div>
+    </div>
+    <div class="vs-divider">vs</div>
+    <div class="pal-group">
+      <span>Option B — Evergreen (current)</span>
+      <div class="pal-swatches">
+        <div class="pal-swatch" style="background:#3A3D2E;" title="#3A3D2E"></div>
+        <div class="pal-swatch" style="background:#595E48;" title="#595E48"></div>
+        <div class="pal-swatch" style="background:#919682;" title="#919682"></div>
+        <div class="pal-swatch" style="background:#EECFCA;" title="#EECFCA"></div>
+        <div class="pal-swatch" style="background:#F0EDE8;" title="#F0EDE8"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule page -->
+  <div class="section-header">Schedule Page</div>
+  <div class="grid">
+
+    <!-- Option A: Soft Garden -->
+    <div class="concept">
+      <div class="concept-label">
+        <span>A — Soft Garden</span>
+        <div class="swatches">
+          <div class="swatch" style="background:#2D3520;"></div>
+          <div class="swatch" style="background:#86A788;"></div>
+          <div class="swatch" style="background:#FFCFCF;"></div>
+          <div class="swatch" style="background:#FFFDEC;"></div>
+        </div>
+      </div>
+      <div class="a">
+        <div class="header">
+          <div class="logo">JOIN<em>PILATES</em></div>
+          <div class="nav">
+            <div class="nav-link active">My Schedule</div>
+            <div class="nav-signout">Sign Out</div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="eyebrow">Schedule</div>
+          <h1>Upcoming<br><em>classes</em></h1>
+          <p class="subtitle">Reserve your spot. Classes fill quickly — book early.</p>
+
+          <!-- Monday -->
+          <div class="date-row">
+            <div class="date-label">Monday, March 24</div>
+            <div class="date-rule"></div>
+          </div>
+
+          <div class="class-row booked">
+            <div class="time-col">
+              <div class="time-main">9:00</div>
+              <div class="time-end">– 10:00 AM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Morning Flow</div>
+              <div class="class-meta">with Sofia Martins</div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-studio">Studio</div>
+              <div class="badge-booked">Booked ✓</div>
+            </div>
+          </div>
+
+          <div class="class-row">
+            <div class="time-col">
+              <div class="time-main">11:00</div>
+              <div class="time-end">– 12:00 PM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Reformer Basics</div>
+              <div class="class-meta">with Sofia Martins · <span class="spots-warn">1 spot left ●</span></div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-online">Online</div>
+              <button class="btn-book">Book Now</button>
+            </div>
+          </div>
+
+          <!-- Tuesday -->
+          <div class="date-row">
+            <div class="date-label">Tuesday, March 25</div>
+            <div class="date-rule"></div>
+          </div>
+
+          <div class="class-row">
+            <div class="time-col">
+              <div class="time-main">7:00</div>
+              <div class="time-end">– 8:00 AM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Power Pilates</div>
+              <div class="class-meta">with Sofia Martins · 4 spots left</div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-studio">Studio</div>
+              <button class="btn-book">Book Now</button>
+            </div>
+          </div>
+
+          <div class="class-row">
+            <div class="time-col">
+              <div class="time-main">6:00</div>
+              <div class="time-end">– 7:00 PM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Evening Stretch</div>
+              <div class="class-meta">with Sofia Martins · Full · 2 on waitlist</div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-online">Online</div>
+              <button class="btn-waitlist">Join Waitlist</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option B: Evergreen -->
+    <div class="concept">
+      <div class="concept-label">
+        <span>B — Evergreen (current, refined)</span>
+        <div class="swatches">
+          <div class="swatch" style="background:#3A3D2E;"></div>
+          <div class="swatch" style="background:#595E48;"></div>
+          <div class="swatch" style="background:#C7A491;"></div>
+          <div class="swatch" style="background:#F0EDE8;"></div>
+        </div>
+      </div>
+      <div class="b">
+        <div class="header">
+          <div class="logo">JOIN<em>PILATES</em></div>
+          <div class="nav">
+            <div class="nav-link active">My Schedule</div>
+            <div class="nav-signout">Sign Out</div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="eyebrow">Schedule</div>
+          <h1>Upcoming<br><em>classes</em></h1>
+          <p class="subtitle">Reserve your spot. Classes fill quickly — book early.</p>
+
+          <!-- Monday -->
+          <div class="date-row">
+            <div class="date-label">Monday, March 24</div>
+            <div class="date-rule"></div>
+          </div>
+
+          <div class="class-row booked">
+            <div class="time-col">
+              <div class="time-main">9:00</div>
+              <div class="time-end">– 10:00 AM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Morning Flow</div>
+              <div class="class-meta">with Sofia Martins</div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-studio">Studio</div>
+              <div class="badge-booked">Booked ✓</div>
+            </div>
+          </div>
+
+          <div class="class-row">
+            <div class="time-col">
+              <div class="time-main">11:00</div>
+              <div class="time-end">– 12:00 PM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Reformer Basics</div>
+              <div class="class-meta">with Sofia Martins · <span class="spots-warn">1 spot left ●</span></div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-online">Online</div>
+              <button class="btn-book">Book Now</button>
+            </div>
+          </div>
+
+          <!-- Tuesday -->
+          <div class="date-row">
+            <div class="date-label">Tuesday, March 25</div>
+            <div class="date-rule"></div>
+          </div>
+
+          <div class="class-row">
+            <div class="time-col">
+              <div class="time-main">7:00</div>
+              <div class="time-end">– 8:00 AM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Power Pilates</div>
+              <div class="class-meta">with Sofia Martins · 4 spots left</div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-studio">Studio</div>
+              <button class="btn-book">Book Now</button>
+            </div>
+          </div>
+
+          <div class="class-row">
+            <div class="time-col">
+              <div class="time-main">6:00</div>
+              <div class="time-end">– 7:00 PM</div>
+            </div>
+            <div class="divider-v"></div>
+            <div class="class-info">
+              <div class="class-name">Evening Stretch</div>
+              <div class="class-meta">with Sofia Martins · Full · 2 on waitlist</div>
+            </div>
+            <div class="class-actions">
+              <div class="badge-online">Online</div>
+              <button class="btn-waitlist">Join Waitlist</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- Login page -->
+  <div class="section-header">Login Page</div>
+  <div class="login-row">
+
+    <!-- Login A -->
+    <div class="login-preview">
+      <div class="concept-label">
+        <span>A — Soft Garden Login</span>
+        <div class="swatches">
+          <div class="swatch" style="background:#2D3520;"></div>
+          <div class="swatch" style="background:#86A788;"></div>
+          <div class="swatch" style="background:#FFCFCF;"></div>
+        </div>
+      </div>
+      <div class="login-a">
+        <div class="login-card-a">
+          <div class="login-logo-a">JOIN<em>PILATES</em></div>
+          <div class="login-tagline">Sign in to your account</div>
+          <div class="login-label login-label-a">Email</div>
+          <input class="login-input-a" type="email" placeholder="you@example.com" />
+          <div class="login-label login-label-a">Password</div>
+          <input class="login-input-a" type="password" placeholder="••••••••" />
+          <button class="login-btn-a">Sign In</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login B -->
+    <div class="login-preview">
+      <div class="concept-label">
+        <span>B — Evergreen Login</span>
+        <div class="swatches">
+          <div class="swatch" style="background:#3A3D2E;"></div>
+          <div class="swatch" style="background:#595E48;"></div>
+          <div class="swatch" style="background:#C7A491;"></div>
+        </div>
+      </div>
+      <div class="login-b">
+        <div class="login-card-b">
+          <div class="login-logo-b">JOIN<em>PILATES</em></div>
+          <div class="login-tagline">Sign in to your account</div>
+          <div class="login-label login-label-b">Email</div>
+          <input class="login-input-b" type="email" placeholder="you@example.com" />
+          <div class="login-label login-label-b">Password</div>
+          <input class="login-input-b" type="password" placeholder="••••••••" />
+          <button class="login-btn-b">Sign In</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /login-row -->
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String              @id
+  email        String              @unique
+  name         String?
+  role         Role                @default(CLIENT)
+  credits      Int                 @default(0)
+  createdAt    DateTime            @default(now())
+  bookings     Booking[]
+  waitlist     Waitlist[]
+  transactions CreditTransaction[]
+}
+
+model PilatesClass {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  type        ClassType   @default(IN_PERSON)
+  startTime   DateTime
+  endTime     DateTime
+  capacity    Int         @default(4)
+  instructor  String
+  createdAt   DateTime    @default(now())
+  bookings    Booking[]
+  waitlist    Waitlist[]
+}
+
+model Booking {
+  id             String       @id @default(cuid())
+  userId         String
+  pilatesClassId String
+  checkedIn      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  pilatesClass   PilatesClass @relation(fields: [pilatesClassId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pilatesClassId])
+}
+
+model Waitlist {
+  id             String       @id @default(cuid())
+  userId         String
+  pilatesClassId String
+  position       Int
+  createdAt      DateTime     @default(now())
+  pilatesClass   PilatesClass @relation(fields: [pilatesClassId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pilatesClassId])
+}
+
+model CreditTransaction {
+  id        String          @id @default(cuid())
+  userId    String
+  amount    Int
+  type      TransactionType
+  note      String?
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum ClassType {
+  IN_PERSON
+  ONLINE
+}
+
+enum TransactionType {
+  MANUAL_GRANT
+  DEDUCTED
+  REFUNDED
+}
