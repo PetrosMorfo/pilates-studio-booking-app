@@ -59,8 +59,8 @@ export const translations = {
     my_position: 'Position',
 
     // Login page
-    login_sign_in_heading: 'Sign in',
-    login_create_heading: 'Create account',
+    login_sign_in_heading: 'Sign',
+    login_create_heading: 'Create',
     login_sign_in_em: 'in',
     login_create_em: 'account',
     login_subtext_in: 'Welcome back.',
