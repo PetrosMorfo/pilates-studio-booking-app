@@ -5,14 +5,15 @@ import { redirect } from 'next/navigation'
 import GrantCreditsButton from '@/components/GrantCreditsButton'
 import Link from 'next/link'
 import Header from '@/components/Header'
+import { getLang } from '@/lib/language'
+import { translate } from '@/lib/translations'
 
 export const dynamic = 'force-dynamic'
 
 const PACKS = [
-  { label: '1 class', amount: 1 },
-  { label: '5 classes', amount: 5 },
-  { label: '10 classes', amount: 10 },
-  { label: 'Unlimited (30)', amount: 30 },
+  { labelKey: '1 class', amount: 1 },
+  { labelKey: '8 classes', amount: 8 },
+  { labelKey: '30 classes', amount: 30 },
 ]
 
 export default async function AdminCreditsPage() {
@@ -35,6 +36,9 @@ export default async function AdminCreditsPage() {
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
   if (dbUser?.role !== 'ADMIN') redirect('/')
+
+  const lang = await getLang()
+  const t = (key: Parameters<typeof translate>[1]) => translate(lang, key)
 
   const clients = await prisma.user.findMany({
     where: { role: 'CLIENT' },
@@ -60,9 +64,9 @@ export default async function AdminCreditsPage() {
               className="pf-link"
               style={{ fontSize: '0.72rem', display: 'inline-block', marginBottom: '1.5rem' }}
             >
-              ← Back to Dashboard
+              {t('common_back_dashboard')}
             </Link>
-            <p className="pf-eyebrow">Admin</p>
+            <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
             <h1 style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: '3.25rem',
@@ -72,15 +76,15 @@ export default async function AdminCreditsPage() {
               letterSpacing: '-0.01em',
               marginBottom: '0.3rem',
             }}>
-              Credit <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>management</em>
+              {t('credits_heading')} <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>{t('credits_heading_em')}</em>
             </h1>
-            <p style={{ fontSize: '0.78rem', color: 'var(--fg-muted)' }}>Assign class packs to clients.</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--fg-muted)' }}>{t('credits_subtext')}</p>
           </div>
 
           {/* Clients list */}
           {clients.length === 0 ? (
             <div className="pf-empty">
-              <p className="pf-empty-title">No clients registered yet</p>
+              <p className="pf-empty-title">{t('credits_no_clients')}</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -118,7 +122,7 @@ export default async function AdminCreditsPage() {
                             {client.credits}
                           </span>
                           <span style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
-                            {client.credits === 1 ? 'credit remaining' : 'credits remaining'}
+                            {t('credits_remaining')}
                           </span>
                         </div>
 
@@ -147,7 +151,7 @@ export default async function AdminCreditsPage() {
                             key={pack.amount}
                             userId={client.id}
                             amount={pack.amount}
-                            label={pack.label}
+                            label={pack.labelKey}
                           />
                         ))}
                       </div>

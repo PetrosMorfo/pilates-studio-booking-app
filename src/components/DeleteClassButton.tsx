@@ -3,8 +3,10 @@
 import { deleteClass } from '@/lib/actions'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function DeleteClassButton({ classId }: { classId: string }) {
+  const { t } = useLanguage()
   const [confirming, setConfirming] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +30,7 @@ export default function DeleteClassButton({ classId }: { classId: string }) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.68rem', color: 'var(--fg-muted)', whiteSpace: 'nowrap' }}>Sure?</span>
+          <span style={{ fontSize: '0.68rem', color: 'var(--fg-muted)', whiteSpace: 'nowrap' }}>{t('delete_sure')}</span>
           <button
             onClick={handleDelete}
             disabled={isDeleting}
@@ -43,7 +45,7 @@ export default function DeleteClassButton({ classId }: { classId: string }) {
               padding: 0,
             }}
           >
-            {isDeleting ? '…' : 'Yes, delete'}
+            {isDeleting ? '…' : t('delete_yes')}
           </button>
           <button
             onClick={() => { setConfirming(false); setError(null) }}
@@ -59,7 +61,7 @@ export default function DeleteClassButton({ classId }: { classId: string }) {
               padding: 0,
             }}
           >
-            ✕
+            {t('delete_cancel_x')}
           </button>
         </div>
         {error && (
@@ -75,7 +77,7 @@ export default function DeleteClassButton({ classId }: { classId: string }) {
         onClick={() => setConfirming(true)}
         className="pf-link pf-link-danger"
       >
-        Delete
+        {t('delete_delete')}
       </button>
       {error && (
         <span style={{ fontSize: '0.65rem', color: 'var(--warn)' }}>{error}</span>

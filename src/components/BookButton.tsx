@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext'
 import { bookClass } from '@/lib/actions'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Props = {
   classId: string
@@ -14,6 +15,7 @@ type Props = {
 
 export default function BookButton({ classId, isBooked, waitlistPosition, isFull }: Props) {
   const { user, loading: authLoading } = useAuth()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -60,7 +62,7 @@ export default function BookButton({ classId, isBooked, waitlistPosition, isFull
         border: '1px solid var(--accent-lt)',
         whiteSpace: 'nowrap',
       }}>
-        Booked ✓
+        {t('book_booked')} ✓
       </span>
     )
   }
@@ -81,7 +83,7 @@ export default function BookButton({ classId, isBooked, waitlistPosition, isFull
         border: '1px solid #EECFCA',
         whiteSpace: 'nowrap',
       }}>
-        Waitlist #{waitlistPosition}
+        {t('book_on_waitlist')} #{waitlistPosition}
       </span>
     )
   }
@@ -110,7 +112,7 @@ export default function BookButton({ classId, isBooked, waitlistPosition, isFull
             transition: 'background 0.15s',
           }}
         >
-          {loading ? 'Adding…' : 'Join Waitlist'}
+          {loading ? t('book_booking') : t('book_join_waitlist')}
         </button>
       ) : (
         <button
@@ -119,7 +121,7 @@ export default function BookButton({ classId, isBooked, waitlistPosition, isFull
           className="pf-btn pf-btn-primary"
           style={{ opacity: loading ? 0.6 : 1 }}
         >
-          {loading ? 'Booking…' : 'Book Now'}
+          {loading ? t('book_booking') : t('book_book')}
         </button>
       )}
       {error && (

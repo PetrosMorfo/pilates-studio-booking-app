@@ -4,6 +4,8 @@ import BookButton from '@/components/BookButton'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { getLang } from '@/lib/language'
+import { translate } from '@/lib/translations'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,9 +26,18 @@ export default async function PilatesPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  const lang = await getLang()
+  const t = (key: Parameters<typeof translate>[1], vars?: Record<string, string | number>) =>
+    translate(lang, key, vars)
+
+  let myCredits = 0
   if (user) {
-    const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true } })
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true, credits: true },
+    })
     if (dbUser?.role === 'ADMIN') redirect('/admin')
+    myCredits = dbUser?.credits ?? 0
   }
 
   const classes = await prisma.pilatesClass.findMany({
@@ -46,12 +57,16 @@ export default async function PilatesPage() {
   // Group by date
   const grouped: Record<string, typeof classes> = {}
   for (const cls of classes) {
-    const dateKey = new Date(cls.startTime).toLocaleDateString('en-US', {
+    const dateKey = new Date(cls.startTime).toLocaleDateString(lang === 'gr' ? 'el-GR' : 'en-US', {
       weekday: 'long', month: 'long', day: 'numeric'
     })
     if (!grouped[dateKey]) grouped[dateKey] = []
     grouped[dateKey].push(cls)
   }
+
+  const creditColor = myCredits === 0 ? 'var(--warn)' : myCredits <= 2 ? 'var(--clay)' : 'var(--forest)'
+  const creditBg = myCredits === 0 ? 'var(--warn-lt)' : myCredits <= 2 ? '#FAF1EE' : 'var(--accent-bg)'
+  const creditBorder = myCredits === 0 ? '#e8cac3' : myCredits <= 2 ? '#EECFCA' : 'var(--accent-lt)'
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -61,7 +76,7 @@ export default async function PilatesPage() {
 
         {/* Page header */}
         <div style={{ marginBottom: '2.75rem' }}>
-          <p className="pf-eyebrow">Schedule</p>
+          <p className="pf-eyebrow">{t('home_eyebrow')}</p>
           <h1 style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: '3.25rem',
@@ -71,18 +86,46 @@ export default async function PilatesPage() {
             marginBottom: '0.65rem',
             letterSpacing: '-0.01em',
           }}>
-            Upcoming <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>classes</em>
+            {t('home_heading')} <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>{t('home_heading_em')}</em>
           </h1>
           <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)', lineHeight: 1.65 }}>
-            Reserve your spot — classes fill quickly.
+            {t('home_subtext')}
           </p>
+
+          {/* Credit badge — only for logged-in clients */}
+          {user && (
+            <div style={{ marginTop: '1.25rem' }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'baseline',
+                gap: '0.35rem',
+                padding: '0.4rem 0.9rem',
+                borderRadius: '999px',
+                background: creditBg,
+                border: `1px solid ${creditBorder}`,
+              }}>
+                <span style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: '1.25rem',
+                  fontWeight: 300,
+                  lineHeight: 1,
+                  color: creditColor,
+                }}>
+                  {myCredits}
+                </span>
+                <span style={{ fontSize: '0.68rem', color: creditColor, fontWeight: 500 }}>
+                  {t('home_credits_label')}
+                </span>
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Class list */}
         {classes.length === 0 ? (
           <div className="pf-empty">
-            <p className="pf-empty-title">All clear for now</p>
-            <span style={{ fontSize: '0.78rem', color: 'var(--fg-muted)' }}>No upcoming classes scheduled yet.</span>
+            <p className="pf-empty-title">{t('home_empty_title')}</p>
+            <span style={{ fontSize: '0.78rem', color: 'var(--fg-muted)' }}>{t('home_empty_sub')}</span>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -152,7 +195,9 @@ export default async function PilatesPage() {
                             {cls.name}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--fg-muted)' }}>with {cls.instructor}</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--fg-muted)' }}>
+                              {t('class_with')} {cls.instructor}
+                            </span>
                             {!isFull && (
                               <>
                                 <span style={{ color: 'var(--border)', fontSize: '0.7rem' }}>·</span>
@@ -161,7 +206,7 @@ export default async function PilatesPage() {
                                   fontWeight: 500,
                                   color: spotsLeft <= 2 ? 'var(--warn)' : 'var(--fg-muted)',
                                 }}>
-                                  {spotsLeft === 1 ? '1 spot left' : `${spotsLeft} spots left`}
+                                  {spotsLeft} {spotsLeft === 1 ? t('class_spot_left') : t('class_spots_left')}
                                   {spotsLeft <= 2 && ' ●'}
                                 </span>
                               </>
@@ -170,7 +215,7 @@ export default async function PilatesPage() {
                               <>
                                 <span style={{ color: 'var(--border)', fontSize: '0.7rem' }}>·</span>
                                 <span style={{ fontSize: '0.7rem', color: 'var(--fg-light)' }}>
-                                  {waitlistCount > 0 ? `Full · ${waitlistCount} on waitlist` : 'Full'}
+                                  {t('class_full')}{waitlistCount > 0 ? ` · ${waitlistCount} ${t('class_on_waitlist')}` : ''}
                                 </span>
                               </>
                             )}
@@ -180,7 +225,7 @@ export default async function PilatesPage() {
                         {/* Right: type badge + action */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
                           <span className={isOnline ? 'pf-badge pf-badge-sage' : 'pf-badge pf-badge-blush'}>
-                            {isOnline ? 'Online' : 'Studio'}
+                            {isOnline ? t('class_online') : t('class_studio')}
                           </span>
                           <BookButton
                             classId={cls.id}

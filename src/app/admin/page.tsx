@@ -5,6 +5,8 @@ import DeleteClassButton from '@/components/DeleteClassButton'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { getLang } from '@/lib/language'
+import { translate } from '@/lib/translations'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +28,10 @@ export default async function AdminDashboard() {
   if (!user) redirect('/login')
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
   if (dbUser?.role !== 'ADMIN') redirect('/')
+
+  const lang = await getLang()
+  const t = (key: Parameters<typeof translate>[1]) => translate(lang, key)
+  const locale = lang === 'gr' ? 'el-GR' : 'en-US'
 
   const now = new Date()
 
@@ -58,7 +64,7 @@ export default async function AdminDashboard() {
           {/* Page header */}
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
             <div>
-              <p className="pf-eyebrow">Admin</p>
+              <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
               <h1 style={{
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: '3.25rem',
@@ -67,18 +73,21 @@ export default async function AdminDashboard() {
                 color: 'var(--fg)',
                 letterSpacing: '-0.01em',
               }}>
-                Studio <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>dashboard</em>
+                {t('admin_heading')} <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>{t('admin_heading_em')}</em>
               </h1>
             </div>
             <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
               <Link href="/admin/add-class" className="pf-btn pf-btn-primary">
-                + Add class
+                + {t('admin_add_class')}
+              </Link>
+              <Link href="/admin/add-client" className="pf-btn pf-btn-ghost">
+                + {t('admin_add_client')}
               </Link>
               <Link href="/admin/attendance" className="pf-btn pf-btn-ghost">
-                Attendance
+                {t('admin_attendance')}
               </Link>
               <Link href="/admin/credits" className="pf-btn pf-btn-ghost">
-                Manage credits
+                {t('admin_manage_credits')}
               </Link>
             </div>
           </div>
@@ -87,32 +96,32 @@ export default async function AdminDashboard() {
           <div className="pf-stats" style={{ marginBottom: '2.5rem' }}>
             <div className="pf-stat">
               <div className="pf-stat-value forest">{upcoming.length}</div>
-              <div className="pf-stat-label">Upcoming classes</div>
+              <div className="pf-stat-label">{t('admin_upcoming_classes')}</div>
             </div>
             <div className="pf-stat">
               <div className="pf-stat-value">{totalBookings}</div>
-              <div className="pf-stat-label">Active bookings</div>
+              <div className="pf-stat-label">{t('admin_active_bookings')}</div>
             </div>
             <div className="pf-stat">
               <div className="pf-stat-value clay">{clients.length}</div>
-              <div className="pf-stat-label">Total clients</div>
+              <div className="pf-stat-label">{t('admin_total_clients')}</div>
             </div>
             <div className="pf-stat">
               <div className="pf-stat-value sage">{totalCredits}</div>
-              <div className="pf-stat-label">Credits held</div>
+              <div className="pf-stat-label">{t('admin_credits_held')}</div>
             </div>
           </div>
 
           {/* Upcoming Classes */}
           <div style={{ marginBottom: '2.5rem' }}>
             <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-              <span className="pf-section-label">Upcoming classes</span>
+              <span className="pf-section-label">{t('admin_classes_section')}</span>
             </div>
 
             {upcoming.length === 0 ? (
               <div className="pf-empty">
-                <p className="pf-empty-title">No upcoming classes</p>
-                <Link href="/admin/add-class" className="pf-link">Add one now →</Link>
+                <p className="pf-empty-title">{t('admin_no_classes')}</p>
+                <Link href="/admin/add-class" className="pf-link">+ {t('admin_add_class')} →</Link>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -133,7 +142,7 @@ export default async function AdminDashboard() {
                     {/* Date block */}
                     <div style={{ width: '38px', flexShrink: 0, textAlign: 'center' }}>
                       <div style={{ fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-light)' }}>
-                        {new Date(cls.startTime).toLocaleDateString('en-US', { month: 'short' })}
+                        {new Date(cls.startTime).toLocaleDateString(locale, { month: 'short' })}
                       </div>
                       <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.8rem', lineHeight: 1, color: 'var(--fg)' }}>
                         {new Date(cls.startTime).getDate()}
@@ -148,7 +157,7 @@ export default async function AdminDashboard() {
                           {cls.name}
                         </span>
                         <span className={cls.type === 'ONLINE' ? 'pf-badge pf-badge-sage' : 'pf-badge pf-badge-blush'}>
-                          {cls.type === 'ONLINE' ? 'Online' : 'Studio'}
+                          {cls.type === 'ONLINE' ? t('class_online') : t('class_studio')}
                         </span>
                       </div>
                       <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
@@ -180,7 +189,7 @@ export default async function AdminDashboard() {
                         </span>
                         {cls.waitlist.length > 0 && (
                           <div style={{ fontSize: '0.62rem', color: 'var(--clay)', marginTop: '0.1rem' }}>
-                            +{cls.waitlist.length} waiting
+                            +{cls.waitlist.length} {t('admin_waitlisted')}
                           </div>
                         )}
                       </div>
@@ -195,13 +204,13 @@ export default async function AdminDashboard() {
           {/* Clients */}
           <div style={{ marginBottom: '2.5rem' }}>
             <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-              <span className="pf-section-label">Clients</span>
+              <span className="pf-section-label">{t('admin_clients_section')}</span>
             </div>
 
             <div className="pf-panel">
               {clients.length === 0 ? (
                 <div style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>No clients yet.</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>{t('admin_no_clients')}</p>
                 </div>
               ) : clients.map((client) => (
                 <div key={client.id} className="pf-row">
@@ -216,14 +225,14 @@ export default async function AdminDashboard() {
                         fontWeight: 700,
                         color: client.credits === 0 ? 'var(--warn)' : client.credits <= 2 ? 'var(--clay)' : 'var(--forest)',
                       }}>
-                        {client.credits} {client.credits === 1 ? 'credit' : 'credits'}
+                        {client.credits} {t('client_credits_label')}
                       </div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--fg-light)' }}>
-                        {client._count.bookings} bookings
+                        {client._count.bookings} {t('admin_booked')}
                       </div>
                     </div>
                     <Link href={`/admin/clients/${client.id}`} className="pf-link">
-                      View →
+                      {t('admin_view')} →
                     </Link>
                   </div>
                 </div>
@@ -235,7 +244,7 @@ export default async function AdminDashboard() {
           {past.length > 0 && (
             <div>
               <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-                <span className="pf-section-label" style={{ color: 'var(--fg-light)' }}>Past classes</span>
+                <span className="pf-section-label" style={{ color: 'var(--fg-light)' }}>{t('admin_past_classes')}</span>
               </div>
               <div className="pf-panel" style={{ opacity: 0.6 }}>
                 {past.slice().reverse().slice(0, 8).map((cls) => (
@@ -244,13 +253,13 @@ export default async function AdminDashboard() {
                       <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         {cls.name}
                         <span className={cls.type === 'ONLINE' ? 'pf-badge pf-badge-sage' : 'pf-badge pf-badge-blush'}>
-                          {cls.type === 'ONLINE' ? 'Online' : 'Studio'}
+                          {cls.type === 'ONLINE' ? t('class_online') : t('class_studio')}
                         </span>
                       </strong>
                       <span>
-                        {new Date(cls.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(cls.startTime).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
                         <span style={{ margin: '0 0.35rem', color: 'var(--border)' }}>·</span>
-                        {cls.bookings.length} attended
+                        {cls.bookings.length} {t('attendance_booked')}
                       </span>
                     </div>
                     <div className="pf-row-aside">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClass, createManyClasses } from '@/lib/actions'
 import Link from 'next/link'
 import Header from '@/components/Header'
+import { useLanguage } from '@/context/LanguageContext'
 
 const DURATIONS = [
   { label: '45 min', value: 45 },
@@ -24,6 +25,7 @@ const WEEKDAYS = [
 ]
 
 export default function AddClassPage() {
+  const { t } = useLanguage()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -82,7 +84,7 @@ export default function AddClassPage() {
     setError(null)
 
     if (mode === 'recurring' && occurrences.length === 0) {
-      setError('No sessions match your selection. Check that the selected days fall within the date range.')
+      setError(t('add_class_no_match'))
       return
     }
 
@@ -101,17 +103,23 @@ export default function AddClassPage() {
     if (result.success) {
       router.push('/admin')
     } else {
-      setError(result.error ?? 'Failed to create class.')
+      setError(result.error ?? t('add_class_no_match'))
     }
   }
 
   const submitLabel = loading
-    ? 'Creating…'
+    ? t('add_class_creating')
     : mode === 'single'
-      ? 'Create Class'
-      : occurrences.length > 0
-        ? `Create ${occurrences.length} Class${occurrences.length === 1 ? '' : 'es'}`
-        : 'Create Classes'
+    ? t('add_class_submit_single')
+    : occurrences.length === 1
+    ? t('add_class_submit_multi', { n: 1 })
+    : occurrences.length > 1
+    ? t('add_class_submit_multi', { n: occurrences.length })
+    : t('add_class_submit_single')
+
+  const capacityHint = type === 'IN_PERSON'
+    ? t('add_class_capacity_hint', { hint: t('add_class_capacity_hint_in') })
+    : t('add_class_capacity_hint', { hint: t('add_class_capacity_hint_online') })
 
   return (
     <>
@@ -126,9 +134,9 @@ export default function AddClassPage() {
               className="pf-link"
               style={{ fontSize: '0.72rem', display: 'inline-block', marginBottom: '1.5rem' }}
             >
-              ← Back to Dashboard
+              {t('common_back_dashboard')}
             </Link>
-            <p className="pf-eyebrow">Admin</p>
+            <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
             <h1 style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: '2.75rem',
@@ -138,10 +146,11 @@ export default function AddClassPage() {
               letterSpacing: '-0.01em',
               marginBottom: '0.4rem',
             }}>
-              Add <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>classes</em>
+              {t('add_class_heading')}{' '}
+              <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>{t('add_class_heading_em')}</em>
             </h1>
             <p style={{ fontSize: '0.78rem', color: 'var(--fg-muted)' }}>
-              Schedule one session or a full recurring timetable.
+              {t('add_class_subtext')}
             </p>
           </div>
 
@@ -165,7 +174,7 @@ export default function AddClassPage() {
                   transition: 'all 0.15s',
                 }}
               >
-                {m === 'single' ? 'Single Class' : 'Recurring Schedule'}
+                {m === 'single' ? t('add_class_tab_single') : t('add_class_tab_recurring')}
               </button>
             ))}
           </div>
@@ -196,19 +205,19 @@ export default function AddClassPage() {
 
               {/* Class Type */}
               <div className="pf-field">
-                <label className="pf-label">Class Type</label>
+                <label className="pf-label">{t('add_class_type')}</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                  {(['IN_PERSON', 'ONLINE'] as const).map((t) => (
+                  {(['IN_PERSON', 'ONLINE'] as const).map((ct) => (
                     <button
-                      key={t}
+                      key={ct}
                       type="button"
-                      onClick={() => handleTypeChange(t)}
+                      onClick={() => handleTypeChange(ct)}
                       style={{
                         padding: '0.85rem 1rem',
                         borderRadius: 'var(--radius-sm)',
-                        border: `2px solid ${type === t ? (t === 'IN_PERSON' ? 'var(--clay)' : 'var(--sage)') : 'var(--border)'}`,
-                        background: type === t ? (t === 'IN_PERSON' ? '#FAF1EE' : 'var(--accent-bg)') : 'var(--bg)',
-                        color: type === t ? (t === 'IN_PERSON' ? '#7a4a3a' : 'var(--forest)') : 'var(--fg-muted)',
+                        border: `2px solid ${type === ct ? (ct === 'IN_PERSON' ? 'var(--clay)' : 'var(--sage)') : 'var(--border)'}`,
+                        background: type === ct ? (ct === 'IN_PERSON' ? '#FAF1EE' : 'var(--accent-bg)') : 'var(--bg)',
+                        color: type === ct ? (ct === 'IN_PERSON' ? '#7a4a3a' : 'var(--forest)') : 'var(--fg-muted)',
                         fontFamily: "'DM Sans', sans-serif",
                         fontSize: '0.8rem',
                         fontWeight: 600,
@@ -216,7 +225,7 @@ export default function AddClassPage() {
                         transition: 'all 0.15s',
                       }}
                     >
-                      {t === 'IN_PERSON' ? 'In-Person' : 'Online'}
+                      {ct === 'IN_PERSON' ? t('add_class_in_person') : t('add_class_online')}
                     </button>
                   ))}
                 </div>
@@ -224,11 +233,11 @@ export default function AddClassPage() {
 
               {/* Class Name */}
               <div className="pf-field">
-                <label className="pf-label">Class Name</label>
+                <label className="pf-label">{t('add_class_name')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Morning Flow, Reformer Basics"
+                  placeholder={t('add_class_name_placeholder')}
                   value={name}
                   onChange={e => setName(e.target.value)}
                   className="pf-input"
@@ -237,11 +246,11 @@ export default function AddClassPage() {
 
               {/* Instructor */}
               <div className="pf-field">
-                <label className="pf-label">Instructor Name</label>
+                <label className="pf-label">{t('add_class_instructor')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Sofia Martins"
+                  placeholder={t('add_class_instructor_placeholder')}
                   value={instructor}
                   onChange={e => setInstructor(e.target.value)}
                   className="pf-input"
@@ -250,7 +259,7 @@ export default function AddClassPage() {
 
               {/* Duration */}
               <div className="pf-field">
-                <label className="pf-label">Duration</label>
+                <label className="pf-label">{t('add_class_duration')}</label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
                   {DURATIONS.map((d) => (
                     <button
@@ -278,7 +287,7 @@ export default function AddClassPage() {
 
               {/* Capacity */}
               <div className="pf-field">
-                <label className="pf-label">Capacity (spots)</label>
+                <label className="pf-label">{t('add_class_capacity')}</label>
                 <input
                   type="number"
                   required
@@ -288,9 +297,7 @@ export default function AddClassPage() {
                   onChange={e => setCapacity(parseInt(e.target.value) || 1)}
                   className="pf-input"
                 />
-                <span className="pf-input-hint">
-                  Default: {type === 'IN_PERSON' ? '4 for in-person' : '5 for online'}. Adjust if needed.
-                </span>
+                <span className="pf-input-hint">{capacityHint}</span>
               </div>
 
               {/* Divider */}
@@ -299,7 +306,7 @@ export default function AddClassPage() {
               {/* ── Single mode: one datetime picker ── */}
               {mode === 'single' && (
                 <div className="pf-field">
-                  <label className="pf-label">Date & Start Time</label>
+                  <label className="pf-label">{t('add_class_datetime')}</label>
                   <input
                     type="datetime-local"
                     required
@@ -314,7 +321,7 @@ export default function AddClassPage() {
               {mode === 'recurring' && (
                 <>
                   <div className="pf-field">
-                    <label className="pf-label">Days of Week</label>
+                    <label className="pf-label">{t('add_class_days')}</label>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       {WEEKDAYS.map(d => (
                         <button
@@ -343,7 +350,7 @@ export default function AddClassPage() {
                   </div>
 
                   <div className="pf-field">
-                    <label className="pf-label">Class Time</label>
+                    <label className="pf-label">{t('add_class_time')}</label>
                     <input
                       type="time"
                       required
@@ -354,10 +361,12 @@ export default function AddClassPage() {
                   </div>
 
                   <div className="pf-field">
-                    <label className="pf-label">Date Range</label>
+                    <label className="pf-label">{t('add_class_range')}</label>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
                       <div>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--fg-muted)', display: 'block', marginBottom: '0.3rem' }}>From</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--fg-muted)', display: 'block', marginBottom: '0.3rem' }}>
+                          {t('add_class_from')}
+                        </span>
                         <input
                           type="date"
                           required
@@ -367,7 +376,9 @@ export default function AddClassPage() {
                         />
                       </div>
                       <div>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--fg-muted)', display: 'block', marginBottom: '0.3rem' }}>To</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--fg-muted)', display: 'block', marginBottom: '0.3rem' }}>
+                          {t('add_class_to')}
+                        </span>
                         <input
                           type="date"
                           required
@@ -400,7 +411,9 @@ export default function AddClassPage() {
                         {occurrences.length}
                       </span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--forest)' }}>
-                        {occurrences.length === 1 ? 'session' : 'sessions'} will be created
+                        {occurrences.length === 1
+                          ? t('add_class_preview_session')
+                          : t('add_class_preview_sessions', { n: occurrences.length })}
                         {occurrences.length > 1 && (
                           <>
                             {' · '}
@@ -422,7 +435,7 @@ export default function AddClassPage() {
                       fontSize: '0.75rem',
                       color: 'var(--warn)',
                     }}>
-                      No matching dates in range. Make sure the selected days fall within your date window.
+                      {t('add_class_no_match')}
                     </div>
                   )}
                 </>

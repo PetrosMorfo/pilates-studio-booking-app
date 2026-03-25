@@ -5,14 +5,16 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import GrantCreditsButton from '@/components/GrantCreditsButton'
+import { AdminBookingActions, AdminWaitlistRemove, AdminAddToClass } from '@/components/AdminBookingActions'
+import { getLang } from '@/lib/language'
+import { translate } from '@/lib/translations'
 
 export const dynamic = 'force-dynamic'
 
 const PACKS = [
   { label: '1 class', amount: 1 },
-  { label: '5 classes', amount: 5 },
   { label: '8 classes', amount: 8 },
-  { label: '10 classes', amount: 10 },
+  { label: '30 classes', amount: 30 },
 ]
 
 export default async function ClientHistoryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,24 +38,50 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
   if (dbUser?.role !== 'ADMIN') redirect('/')
 
+  const lang = await getLang()
+  const t = (key: Parameters<typeof translate>[1]) => translate(lang, key)
+  const locale = lang === 'gr' ? 'el-GR' : 'en-US'
+
+  // Fetch client with bookings, transactions, and waitlist entries
   const client = await prisma.user.findUnique({
     where: { id },
     include: {
       bookings: {
         include: { pilatesClass: true },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       },
       transactions: {
-        orderBy: { createdAt: 'desc' }
-      }
-    }
+        orderBy: { createdAt: 'desc' },
+      },
+      waitlist: {
+        include: { pilatesClass: true },
+        orderBy: { position: 'asc' },
+      },
+    },
   })
 
   if (!client) redirect('/admin')
 
+  // Upcoming classes list for move/add dropdowns
+  const rawClasses = await prisma.pilatesClass.findMany({
+    where: { startTime: { gte: new Date() } },
+    include: { _count: { select: { bookings: true } } },
+    orderBy: { startTime: 'asc' },
+    take: 40,
+  })
+
+  const upcomingClasses = rawClasses.map(cls => ({
+    id: cls.id,
+    name: cls.name,
+    startTime: cls.startTime.toISOString(),
+    instructor: cls.instructor,
+    spotsLeft: Math.max(0, cls.capacity - cls._count.bookings),
+  }))
+
   const attended = client.bookings.filter(b => b.checkedIn).length
-  const upcoming = client.bookings.filter(b => new Date(b.pilatesClass.startTime) >= new Date())
-  const past = client.bookings.filter(b => new Date(b.pilatesClass.startTime) < new Date())
+  const upcomingBookings = client.bookings.filter(b => new Date(b.pilatesClass.startTime) >= new Date())
+  const pastBookings = client.bookings.filter(b => new Date(b.pilatesClass.startTime) < new Date())
+  const futureWaitlist = client.waitlist.filter(w => new Date(w.pilatesClass.startTime) >= new Date())
 
   const creditColor = client.credits === 0 ? 'var(--warn)' : client.credits <= 2 ? 'var(--clay)' : 'var(--forest)'
   const creditBg = client.credits === 0 ? 'var(--warn-lt)' : client.credits <= 2 ? '#FAF1EE' : 'var(--accent-bg)'
@@ -70,13 +98,13 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
             className="pf-link"
             style={{ fontSize: '0.72rem', display: 'inline-block', marginBottom: '1.5rem' }}
           >
-            ← Back to Dashboard
+            {t('common_back_dashboard')}
           </Link>
 
           {/* Client header */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '2rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
             <div>
-              <p className="pf-eyebrow">Client</p>
+              <p className="pf-eyebrow">{t('client_eyebrow')}</p>
               <h1 style={{
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: '3.25rem',
@@ -90,9 +118,12 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
               </h1>
               <p style={{ fontSize: '0.78rem', color: 'var(--fg-light)' }}>{client.email}</p>
               <p style={{ fontSize: '0.72rem', color: 'var(--fg-light)', marginTop: '0.2rem' }}>
-                Member since {new Date(client.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                {t('client_member_since')}{' '}
+                {new Date(client.createdAt).toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
+
+            {/* Credit pill */}
             <div style={{
               textAlign: 'center',
               padding: '1.25rem 2rem',
@@ -118,7 +149,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
                 color: 'var(--fg-light)',
                 marginTop: '0.25rem',
               }}>
-                credits
+                {t('client_credits_label')}
               </div>
             </div>
           </div>
@@ -127,15 +158,15 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
           <div className="pf-stats" style={{ marginBottom: '2.5rem' }}>
             <div className="pf-stat">
               <div className="pf-stat-value">{client.bookings.length}</div>
-              <div className="pf-stat-label">Total bookings</div>
+              <div className="pf-stat-label">{t('client_total_bookings')}</div>
             </div>
             <div className="pf-stat">
               <div className="pf-stat-value forest">{attended}</div>
-              <div className="pf-stat-label">Classes attended</div>
+              <div className="pf-stat-label">{t('client_attended')}</div>
             </div>
             <div className="pf-stat">
-              <div className="pf-stat-value sage">{upcoming.length}</div>
-              <div className="pf-stat-label">Upcoming</div>
+              <div className="pf-stat-value sage">{upcomingBookings.length}</div>
+              <div className="pf-stat-label">{t('client_upcoming')}</div>
             </div>
           </div>
 
@@ -145,9 +176,9 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-lg)',
             padding: '1.5rem',
-            marginBottom: '2rem',
+            marginBottom: '1.5rem',
           }}>
-            <p className="pf-section-label" style={{ marginBottom: '0.85rem' }}>Grant Credits</p>
+            <p className="pf-section-label" style={{ marginBottom: '0.85rem' }}>{t('client_grant_credits')}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {PACKS.map(pack => (
                 <GrantCreditsButton key={pack.amount} userId={client.id} amount={pack.amount} label={pack.label} />
@@ -155,25 +186,57 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
             </div>
           </div>
 
+          {/* Add to Class */}
+          <div style={{ marginBottom: '2rem' }}>
+            <AdminAddToClass userId={client.id} upcomingClasses={upcomingClasses} />
+          </div>
+
           {/* Upcoming bookings */}
-          {upcoming.length > 0 && (
+          {upcomingBookings.length > 0 && (
             <div style={{ marginBottom: '2rem' }}>
               <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-                <span className="pf-section-label">Upcoming Bookings</span>
+                <span className="pf-section-label">{t('client_upcoming_bookings')}</span>
               </div>
               <div className="pf-panel">
-                {upcoming.map(b => (
+                {upcomingBookings.map(b => (
                   <div key={b.id} className="pf-row">
                     <div className="pf-row-main">
                       <strong>{b.pilatesClass.name}</strong>
                       <span>
-                        {new Date(b.pilatesClass.startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+                        {new Date(b.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
                         {' · '}
                         {new Date(b.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                     <div className="pf-row-aside">
-                      <span className="pf-badge pf-badge-sage">Booked</span>
+                      <AdminBookingActions bookingId={b.id} upcomingClasses={upcomingClasses} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Waitlist entries */}
+          {futureWaitlist.length > 0 && (
+            <div style={{ marginBottom: '2rem' }}>
+              <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
+                <span className="pf-section-label">{t('client_on_waitlist')}</span>
+              </div>
+              <div className="pf-panel">
+                {futureWaitlist.map(w => (
+                  <div key={w.id} className="pf-row">
+                    <div className="pf-row-main">
+                      <strong>{w.pilatesClass.name}</strong>
+                      <span>
+                        {new Date(w.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
+                        {' · '}
+                        {new Date(w.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {' · '}#{w.position}
+                      </span>
+                    </div>
+                    <div className="pf-row-aside">
+                      <AdminWaitlistRemove waitlistId={w.id} />
                     </div>
                   </div>
                 ))}
@@ -182,27 +245,27 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
           )}
 
           {/* Past bookings */}
-          {past.length > 0 && (
+          {pastBookings.length > 0 && (
             <div style={{ marginBottom: '2rem' }}>
               <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-                <span className="pf-section-label" style={{ color: 'var(--fg-light)' }}>Past Bookings</span>
+                <span className="pf-section-label" style={{ color: 'var(--fg-light)' }}>{t('client_past_bookings')}</span>
               </div>
               <div className="pf-panel" style={{ opacity: 0.7 }}>
-                {past.map(b => (
+                {pastBookings.map(b => (
                   <div key={b.id} className="pf-row">
                     <div className="pf-row-main">
                       <strong>{b.pilatesClass.name}</strong>
                       <span>
-                        {new Date(b.pilatesClass.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                        {new Date(b.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                     <div className="pf-row-aside">
                       {b.checkedIn
-                        ? <span className="pf-badge pf-badge-sage">Attended</span>
+                        ? <span className="pf-badge pf-badge-sage">{t('client_attended')}</span>
                         : <span style={{
                             fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.1em',
                             textTransform: 'uppercase', color: 'var(--fg-light)',
-                          }}>No-show</span>
+                          }}>{t('client_no_show')}</span>
                       }
                     </div>
                   </div>
@@ -215,7 +278,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
           {client.transactions.length > 0 && (
             <div>
               <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-                <span className="pf-section-label">Credit History</span>
+                <span className="pf-section-label">{t('client_credit_history')}</span>
               </div>
               <div style={{
                 background: 'var(--bg-card)',
@@ -226,7 +289,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ background: 'var(--accent-bg)', borderBottom: '1px solid var(--border)' }}>
-                      {['Type', 'Amount', 'Note', 'Date'].map(h => (
+                      {[t('credit_col_type'), t('credit_col_amount'), t('credit_col_note'), t('credit_col_date')].map(h => (
                         <th key={h} style={{
                           padding: '0.65rem 1.25rem',
                           fontSize: '0.6rem',
@@ -239,32 +302,36 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
                     </tr>
                   </thead>
                   <tbody>
-                    {client.transactions.map((t, i) => (
-                      <tr key={t.id} style={{ borderTop: i > 0 ? '1px solid var(--border-lt)' : 'none' }}>
+                    {client.transactions.map((tx, i) => (
+                      <tr key={tx.id} style={{ borderTop: i > 0 ? '1px solid var(--border-lt)' : 'none' }}>
                         <td style={{ padding: '0.75rem 1.25rem' }}>
                           <span style={{
                             fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.1em',
                             textTransform: 'uppercase', padding: '0.2rem 0.5rem',
                             borderRadius: 'var(--radius-sm)',
-                            background: t.type === 'MANUAL_GRANT' ? 'var(--accent-bg)' : t.type === 'DEDUCTED' ? 'var(--warn-lt)' : '#FAF1EE',
-                            color: t.type === 'MANUAL_GRANT' ? 'var(--forest)' : t.type === 'DEDUCTED' ? 'var(--warn)' : 'var(--clay)',
+                            background: tx.type === 'MANUAL_GRANT' ? 'var(--accent-bg)' : tx.type === 'DEDUCTED' ? 'var(--warn-lt)' : '#FAF1EE',
+                            color: tx.type === 'MANUAL_GRANT' ? 'var(--forest)' : tx.type === 'DEDUCTED' ? 'var(--warn)' : 'var(--clay)',
                           }}>
-                            {t.type === 'MANUAL_GRANT' ? 'Granted' : t.type === 'DEDUCTED' ? 'Deducted' : 'Refunded'}
+                            {tx.type === 'MANUAL_GRANT'
+                              ? t('credit_type_granted')
+                              : tx.type === 'DEDUCTED'
+                              ? t('credit_type_deducted')
+                              : t('credit_type_refunded')}
                           </span>
                         </td>
                         <td style={{
                           padding: '0.75rem 1.25rem',
                           fontSize: '0.82rem',
                           fontWeight: 700,
-                          color: t.amount > 0 ? 'var(--forest)' : 'var(--warn)',
+                          color: tx.amount > 0 ? 'var(--forest)' : 'var(--warn)',
                         }}>
-                          {t.amount > 0 ? `+${t.amount}` : t.amount}
+                          {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
                         </td>
                         <td style={{ padding: '0.75rem 1.25rem', fontSize: '0.78rem', color: 'var(--fg-muted)' }}>
-                          {t.note || '—'}
+                          {tx.note || '—'}
                         </td>
                         <td style={{ padding: '0.75rem 1.25rem', fontSize: '0.72rem', color: 'var(--fg-light)' }}>
-                          {new Date(t.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {new Date(tx.createdAt).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </td>
                       </tr>
                     ))}

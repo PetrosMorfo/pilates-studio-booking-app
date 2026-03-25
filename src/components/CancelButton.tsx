@@ -3,12 +3,14 @@
 import { cancelBooking, leaveWaitlist } from '@/lib/actions'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Props =
   | { type: 'booking'; id: string; classTime: Date }
   | { type: 'waitlist'; id: string }
 
 export default function CancelButton(props: Props) {
+  const { t } = useLanguage()
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -56,7 +58,7 @@ export default function CancelButton(props: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ fontSize: '0.68rem', color: 'var(--fg-muted)', whiteSpace: 'nowrap' }}>
-            {props.type === 'waitlist' ? 'Leave waitlist?' : 'Cancel booking?'}
+            {props.type === 'waitlist' ? t('cancel_confirm_waitlist') : t('cancel_confirm_booking')}
           </span>
           <button
             onClick={handleCancel}
@@ -72,7 +74,7 @@ export default function CancelButton(props: Props) {
               padding: 0,
             }}
           >
-            {loading ? '…' : 'Yes'}
+            {loading ? '…' : t('cancel_yes')}
           </button>
           <button
             onClick={() => { setConfirming(false); setError(null) }}
@@ -88,7 +90,7 @@ export default function CancelButton(props: Props) {
               padding: 0,
             }}
           >
-            No
+            {t('cancel_no')}
           </button>
         </div>
         {error && (
@@ -118,7 +120,7 @@ export default function CancelButton(props: Props) {
         onMouseEnter={e => { (e.target as HTMLElement).style.color = 'var(--warn)' }}
         onMouseLeave={e => { (e.target as HTMLElement).style.color = 'var(--fg-muted)' }}
       >
-        {props.type === 'waitlist' ? 'Leave' : 'Cancel'}
+        {props.type === 'waitlist' ? t('cancel_leave') : t('cancel_cancel')}
       </button>
       {error && (
         <span style={{ fontSize: '0.65rem', color: 'var(--warn)' }}>{error}</span>

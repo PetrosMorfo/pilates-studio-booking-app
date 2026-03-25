@@ -339,3 +339,193 @@ export async function deleteClass(classId: string) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to delete class' }
   }
 }
+
+// ─── Admin booking management ─────────────────────────────────────────────────
+
+export async function adminCancelBooking(bookingId: string) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { pilatesClass: true }
+    })
+    if (!booking) throw new Error('Booking not found.')
+
+    await prisma.$transaction(async (tx) => {
+      await tx.booking.delete({ where: { id: bookingId } })
+
+      const nextOnWaitlist = await tx.waitlist.findFirst({
+        where: { pilatesClassId: booking.pilatesClassId },
+        orderBy: { position: 'asc' }
+      })
+
+      if (nextOnWaitlist) {
+        await tx.booking.create({
+          data: { userId: nextOnWaitlist.userId, pilatesClassId: nextOnWaitlist.pilatesClassId }
+        })
+        await tx.waitlist.delete({ where: { id: nextOnWaitlist.id } })
+        await tx.waitlist.updateMany({
+          where: { pilatesClassId: booking.pilatesClassId, position: { gt: nextOnWaitlist.position } },
+          data: { position: { decrement: 1 } }
+        })
+      }
+    })
+
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to cancel booking' }
+  }
+}
+
+export async function adminMoveBooking(bookingId: string, newClassId: string) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    const booking = await prisma.booking.findUnique({ where: { id: bookingId } })
+    if (!booking) throw new Error('Booking not found.')
+
+    await prisma.$transaction(async (tx) => {
+      // Cancel the old booking without promoting waitlist
+      await tx.booking.delete({ where: { id: bookingId } })
+
+      const newClass = await tx.pilatesClass.findUnique({
+        where: { id: newClassId },
+        include: { bookings: true, waitlist: true }
+      })
+      if (!newClass) throw new Error('Target class not found.')
+
+      const alreadyBooked = await tx.booking.findUnique({
+        where: { userId_pilatesClassId: { userId: booking.userId, pilatesClassId: newClassId } }
+      })
+      if (alreadyBooked) throw new Error('Client is already booked in that class.')
+
+      const spotsLeft = newClass.capacity - newClass.bookings.length
+
+      if (spotsLeft > 0) {
+        await tx.booking.create({ data: { userId: booking.userId, pilatesClassId: newClassId } })
+      } else {
+        const alreadyWaitlisted = await tx.waitlist.findUnique({
+          where: { userId_pilatesClassId: { userId: booking.userId, pilatesClassId: newClassId } }
+        })
+        if (alreadyWaitlisted) throw new Error('Client is already on the waitlist for that class.')
+
+        const nextPosition = newClass.waitlist.length + 1
+        await tx.waitlist.create({
+          data: { userId: booking.userId, pilatesClassId: newClassId, position: nextPosition }
+        })
+      }
+    })
+
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to move booking' }
+  }
+}
+
+export async function adminBookClass(userId: string, classId: string) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    const existingBooking = await prisma.booking.findUnique({
+      where: { userId_pilatesClassId: { userId, pilatesClassId: classId } }
+    })
+    if (existingBooking) throw new Error('Client is already booked in this class.')
+
+    const existingWaitlist = await prisma.waitlist.findUnique({
+      where: { userId_pilatesClassId: { userId, pilatesClassId: classId } }
+    })
+    if (existingWaitlist) throw new Error('Client is already on the waitlist for this class.')
+
+    const result = await prisma.$transaction(async (tx) => {
+      const pilatesClass = await tx.pilatesClass.findUnique({
+        where: { id: classId },
+        include: { bookings: true, waitlist: true }
+      })
+      if (!pilatesClass) throw new Error('Class not found.')
+
+      const spotsLeft = pilatesClass.capacity - pilatesClass.bookings.length
+
+      if (spotsLeft > 0) {
+        await tx.booking.create({ data: { userId, pilatesClassId: classId } })
+        return { waitlisted: false }
+      } else {
+        const nextPosition = pilatesClass.waitlist.length + 1
+        await tx.waitlist.create({ data: { userId, pilatesClassId: classId, position: nextPosition } })
+        return { waitlisted: true, position: nextPosition }
+      }
+    })
+
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true, ...result }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to book class for client' }
+  }
+}
+
+export async function adminRemoveFromWaitlist(waitlistId: string) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    const entry = await prisma.waitlist.findUnique({ where: { id: waitlistId } })
+    if (!entry) throw new Error('Waitlist entry not found.')
+
+    await prisma.waitlist.delete({ where: { id: waitlistId } })
+    await prisma.waitlist.updateMany({
+      where: { pilatesClassId: entry.pilatesClassId, position: { gt: entry.position } },
+      data: { position: { decrement: 1 } }
+    })
+
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to remove from waitlist' }
+  }
+}
+
+export async function adminInviteUser(name: string, email: string) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email.trim().toLowerCase(), {
+      data: { full_name: name.trim() }
+    })
+    if (error) throw new Error(error.message)
+
+    // Pre-create user record so they appear in the client list immediately
+    const existingUser = await prisma.user.findUnique({ where: { id: data.user.id } })
+    if (!existingUser) {
+      await prisma.user.create({
+        data: {
+          id: data.user.id,
+          email: data.user.email!,
+          name: name.trim(),
+          role: 'CLIENT',
+          credits: 0,
+        }
+      })
+    }
+
+    revalidatePath('/admin')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to invite user' }
+  }
+}

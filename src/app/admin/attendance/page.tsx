@@ -5,6 +5,8 @@ import Header from '@/components/Header'
 import Link from 'next/link'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { getLang } from '@/lib/language'
+import { translate } from '@/lib/translations'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +31,10 @@ export default async function AttendancePage() {
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
   if (dbUser?.role !== 'ADMIN') redirect('/')
 
+  const lang = await getLang()
+  const t = (key: Parameters<typeof translate>[1]) => translate(lang, key)
+  const locale = lang === 'gr' ? 'el-GR' : 'en-US'
+
   const now = new Date()
   const allClasses = await prisma.pilatesClass.findMany({
     include: {
@@ -51,9 +57,9 @@ export default async function AttendancePage() {
 
           <div style={{ marginBottom: '2rem' }}>
             <Link href="/admin" className="pf-link" style={{ fontSize: '0.72rem', display: 'inline-block', marginBottom: '1.5rem' }}>
-              ← Back to Dashboard
+              {t('common_back_dashboard')}
             </Link>
-            <p className="pf-eyebrow">Admin</p>
+            <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
             <h1 style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: '3.25rem',
@@ -62,7 +68,7 @@ export default async function AttendancePage() {
               color: 'var(--fg)',
               letterSpacing: '-0.01em',
             }}>
-              Attendance <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>check-in</em>
+              {t('attendance_heading')} <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>{t('attendance_heading_em')}</em>
             </h1>
           </div>
 
@@ -70,10 +76,10 @@ export default async function AttendancePage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '3.5rem' }}>
             {upcoming.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '5rem 0', border: '1px dashed var(--border)', borderRadius: 'var(--radius-lg)' }}>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', color: 'var(--border)' }}>No upcoming classes</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', color: 'var(--border)' }}>{t('attendance_no_classes')}</p>
               </div>
             ) : (
-              upcoming.map(cls => <ClassCard key={cls.id} cls={cls} />)
+              upcoming.map(cls => <ClassCard key={cls.id} cls={cls} locale={locale} />)
             )}
           </div>
 
@@ -81,10 +87,10 @@ export default async function AttendancePage() {
           {past.length > 0 && (
             <>
               <div className="pf-section-rule" style={{ marginBottom: '1rem' }}>
-                <span className="pf-section-label" style={{ color: 'var(--fg-light)' }}>Past classes</span>
+                <span className="pf-section-label" style={{ color: 'var(--fg-light)' }}>{t('attendance_past')}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', opacity: 0.5 }}>
-                {past.slice().reverse().map(cls => <ClassCard key={cls.id} cls={cls} isPast />)}
+                {past.slice().reverse().map(cls => <ClassCard key={cls.id} cls={cls} isPast locale={locale} />)}
               </div>
             </>
           )}
@@ -109,9 +115,10 @@ type ClassCardProps = {
     waitlist: { id: string }[]
   }
   isPast?: boolean
+  locale: string
 }
 
-function ClassCard({ cls, isPast }: ClassCardProps) {
+function ClassCard({ cls, isPast, locale }: ClassCardProps) {
   const checkedInCount = cls.bookings.filter(b => b.checkedIn).length
   const isOnline = cls.type === 'ONLINE'
 
@@ -134,7 +141,7 @@ function ClassCard({ cls, isPast }: ClassCardProps) {
             </span>
           </div>
           <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
-            {new Date(cls.startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+            {new Date(cls.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
             <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
             {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </p>
@@ -143,7 +150,7 @@ function ClassCard({ cls, isPast }: ClassCardProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {cls.waitlist.length > 0 && (
             <span className="pf-badge" style={{ background: '#FBF3E2', color: '#D4A853', border: '1px solid #EDD99A' }}>
-              {cls.waitlist.length} waiting
+              +{cls.waitlist.length}
             </span>
           )}
           <span className="pf-badge pf-badge-sage">
@@ -151,7 +158,7 @@ function ClassCard({ cls, isPast }: ClassCardProps) {
           </span>
           {!isPast && cls.bookings.length > 0 && (
             <span className="pf-badge" style={{ background: 'var(--fg)', color: 'var(--bg)' }}>
-              {checkedInCount} present
+              ✓ {checkedInCount}
             </span>
           )}
         </div>
@@ -161,7 +168,7 @@ function ClassCard({ cls, isPast }: ClassCardProps) {
       <div style={{ padding: '0.5rem 1.5rem 1rem' }}>
         {cls.bookings.length === 0 ? (
           <p style={{ fontSize: '0.8rem', color: 'var(--fg-light)', fontStyle: 'italic', padding: '0.75rem 0' }}>
-            No students booked yet.
+            —
           </p>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -186,7 +193,7 @@ function ClassCard({ cls, isPast }: ClassCardProps) {
                       color: b.user.credits === 0 ? 'var(--warn)' : 'var(--fg-light)',
                       fontWeight: b.user.credits === 0 ? 600 : 400,
                     }}>
-                      {b.user.credits} credit{b.user.credits !== 1 ? 's' : ''}
+                      {b.user.credits} cr
                     </p>
                   </div>
                 </div>
@@ -198,7 +205,7 @@ function ClassCard({ cls, isPast }: ClassCardProps) {
                     textTransform: 'uppercase',
                     color: 'var(--forest)',
                   }}>
-                    ✓ Present
+                    ✓
                   </span>
                 )}
               </li>

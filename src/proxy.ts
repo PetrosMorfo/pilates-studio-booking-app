@@ -27,14 +27,29 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // Refresh session so Server Components can read it.
-  // Wrapped in try/catch so a network hiccup or paused Supabase project
-  // doesn't flood the console with "fetch failed" on every request.
+  // Refresh session so Server Components can read it, and capture the user
+  // for the auth gate below. Wrapped in try/catch so a network hiccup or
+  // paused Supabase project doesn't flood the console with errors.
+  let user = null
   try {
-    await supabase.auth.getUser()
+    const { data } = await supabase.auth.getUser()
+    user = data.user
   } catch {
-    // Session refresh failed silently — protected pages will handle
-    // the redirect themselves when they call getUser() server-side.
+    // Session refresh failed silently — protected pages handle their own
+    // redirect when they call getUser() server-side.
+  }
+
+  // Auth gate: redirect unauthenticated users to /login
+  const pathname = request.nextUrl.pathname
+  const isPublicPath =
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/_next')
+
+  if (!user && !isPublicPath) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
   }
 
   return response

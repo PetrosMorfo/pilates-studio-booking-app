@@ -1,4 +1,6 @@
 import { AuthProvider } from '@/context/AuthContext'
+import { LanguageProvider } from '@/context/LanguageContext'
+import { getLang } from '@/lib/language'
 import './globals.css'
 
 export const metadata = {
@@ -6,13 +8,15 @@ export const metadata = {
   description: 'Studio management for Pilates instructors',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const lang = await getLang()
+
   return (
-    <html lang="en">
+    <html lang={lang === 'gr' ? 'el' : 'en'}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -23,7 +27,9 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          {children}
+          <LanguageProvider initialLang={lang}>
+            {children}
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>

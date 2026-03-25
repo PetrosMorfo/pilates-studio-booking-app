@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import CancelButton from '@/components/CancelButton'
 import Header from '@/components/Header'
 import Link from 'next/link'
+import { getLang } from '@/lib/language'
+import { translate } from '@/lib/translations'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,6 +27,12 @@ export default async function MyBookingsPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const lang = await getLang()
+  const t = (key: Parameters<typeof translate>[1], vars?: Record<string, string | number>) =>
+    translate(lang, key, vars)
+
+  const locale = lang === 'gr' ? 'el-GR' : 'en-US'
 
   const [dbUser, myBookings, myWaitlist] = await Promise.all([
     prisma.user.findUnique({ where: { id: user.id }, select: { credits: true, name: true } }),
@@ -54,7 +62,7 @@ export default async function MyBookingsPage() {
 
         {/* Page header */}
         <div style={{ marginBottom: '2.75rem' }}>
-          <p className="pf-eyebrow">My account</p>
+          <p className="pf-eyebrow">{t('my_eyebrow')}</p>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem' }}>
             <h1 style={{
               fontFamily: "'Cormorant Garamond', serif",
@@ -64,10 +72,12 @@ export default async function MyBookingsPage() {
               color: 'var(--fg)',
               letterSpacing: '-0.01em',
             }}>
-              {firstName ? `${firstName}'s` : 'My'}{' '}
-              <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>schedule</em>
+              {firstName ? `${firstName}'s` : t('my_heading')}{' '}
+              <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>
+                {firstName ? t('my_heading_em_named') : t('my_heading_em')}
+              </em>
             </h1>
-            {/* Credits pill */}
+            {/* Credits display */}
             <div style={{ textAlign: 'right', paddingBottom: '0.25rem', flexShrink: 0 }}>
               <div style={{
                 fontFamily: "'Cormorant Garamond', serif",
@@ -86,7 +96,7 @@ export default async function MyBookingsPage() {
                 color: 'var(--fg-light)',
                 marginTop: '0.2rem',
               }}>
-                {credits === 1 ? 'credit' : 'credits'}
+                {credits === 1 ? t('my_credit_label') : t('my_credits_label')}
               </div>
             </div>
           </div>
@@ -95,9 +105,9 @@ export default async function MyBookingsPage() {
         {/* Upcoming bookings */}
         {upcomingBookings.length === 0 ? (
           <div className="pf-empty" style={{ marginBottom: '2rem' }}>
-            <p className="pf-empty-title">Nothing booked yet</p>
+            <p className="pf-empty-title">{t('my_no_upcoming')}</p>
             <Link href="/" className="pf-link" style={{ fontSize: '0.78rem' }}>
-              Browse classes →
+              {t('my_no_upcoming_sub')} →
             </Link>
           </div>
         ) : (
@@ -131,14 +141,14 @@ export default async function MyBookingsPage() {
                         {b.pilatesClass.name}
                       </span>
                       <span className={isOnline ? 'pf-badge pf-badge-sage' : 'pf-badge pf-badge-blush'}>
-                        {isOnline ? 'Online' : 'Studio'}
+                        {isOnline ? t('class_online') : t('class_studio')}
                       </span>
                       {isToday && (
-                        <span className="pf-badge pf-badge-dark">Today</span>
+                        <span className="pf-badge pf-badge-dark">{t('my_today')}</span>
                       )}
                     </div>
                     <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
-                      {classTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                      {classTime.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
                       <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
                       {classTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
@@ -154,7 +164,7 @@ export default async function MyBookingsPage() {
         {myWaitlist.length > 0 && (
           <div style={{ marginBottom: '2.5rem' }}>
             <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-              <span className="pf-section-label">Waitlist</span>
+              <span className="pf-section-label">{t('my_waitlist_section')}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {myWaitlist.map(w => (
@@ -185,12 +195,9 @@ export default async function MyBookingsPage() {
                       </span>
                     </div>
                     <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
-                      {new Date(w.pilatesClass.startTime).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                      {new Date(w.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
                       <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
                       {new Date(w.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                    <p style={{ fontSize: '0.68rem', color: 'var(--clay)', fontWeight: 500, marginTop: '0.2rem' }}>
-                      Auto-booked when a spot opens
                     </p>
                   </div>
                   <CancelButton type="waitlist" id={w.id} />
@@ -204,7 +211,7 @@ export default async function MyBookingsPage() {
         {pastBookings.length > 0 && (
           <div>
             <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-              <span className="pf-section-label">Past sessions</span>
+              <span className="pf-section-label">{t('my_past')}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', opacity: 0.55 }}>
               {pastBookings.slice().reverse().slice(0, 6).map(b => (
@@ -225,12 +232,12 @@ export default async function MyBookingsPage() {
                       {b.pilatesClass.name}
                     </p>
                     <p style={{ fontSize: '0.68rem', color: 'var(--fg-light)' }}>
-                      {new Date(b.pilatesClass.startTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                      {new Date(b.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' })}
                     </p>
                   </div>
                   {b.checkedIn
-                    ? <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--forest)' }}>Attended</span>
-                    : <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-light)' }}>Missed</span>
+                    ? <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--forest)' }}>{t('my_attended')}</span>
+                    : <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-light)' }}>{t('my_missed')}</span>
                   }
                 </div>
               ))}

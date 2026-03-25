@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function LoginPage() {
+  const { t } = useLanguage()
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,7 +34,7 @@ export default function LoginPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email: cleanEmail }),
         })
-        setSuccessMsg('Account created! You can now sign in.')
+        setSuccessMsg(t('login_switch_to_signin'))
         setIsSignUp(false)
         setLoading(false)
       } else {
@@ -76,10 +78,13 @@ export default function LoginPage() {
             marginBottom: '0.25rem',
             letterSpacing: '-0.01em',
           }}>
-            {isSignUp ? 'Join the studio' : 'Welcome back'}
+            {isSignUp ? t('login_create_heading') : t('login_sign_in_heading')}{' '}
+            <em style={{ color: 'var(--sage)', fontStyle: 'italic' }}>
+              {isSignUp ? t('login_create_em') : t('login_sign_in_em')}
+            </em>
           </h2>
           <p style={{ fontSize: '0.75rem', color: 'var(--fg-muted)', marginBottom: '1.75rem' }}>
-            {isSignUp ? 'Create your account to start booking.' : 'Sign in to manage your schedule.'}
+            {isSignUp ? t('login_subtext_up') : t('login_subtext_in')}
           </p>
 
           {successMsg && (
@@ -113,7 +118,7 @@ export default function LoginPage() {
           <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {isSignUp && (
               <div className="pf-field">
-                <label className="pf-label">Full Name</label>
+                <label className="pf-label">{t('login_name')}</label>
                 <input
                   type="text"
                   required
@@ -126,7 +131,7 @@ export default function LoginPage() {
             )}
 
             <div className="pf-field">
-              <label className="pf-label">Email</label>
+              <label className="pf-label">{t('login_email')}</label>
               <input
                 type="email"
                 required
@@ -138,7 +143,7 @@ export default function LoginPage() {
             </div>
 
             <div className="pf-field">
-              <label className="pf-label">Password</label>
+              <label className="pf-label">{t('login_password')}</label>
               <input
                 type="password"
                 required
@@ -162,7 +167,7 @@ export default function LoginPage() {
                 opacity: loading ? 0.6 : 1,
               }}
             >
-              {loading ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in'}
+              {loading ? t('common_loading') : isSignUp ? t('login_submit_up') : t('login_submit_in')}
             </button>
           </form>
         </div>
@@ -181,14 +186,8 @@ export default function LoginPage() {
               padding: 0,
             }}
           >
-            {isSignUp ? 'Already have an account? Sign in →' : "Don't have an account? Create one →"}
+            {isSignUp ? t('login_switch_to_signin') : t('login_switch_to_signup')} →
           </button>
-          <Link
-            href="/"
-            style={{ fontSize: '0.7rem', color: 'var(--fg-light)', textDecoration: 'none' }}
-          >
-            ← Back to classes
-          </Link>
         </div>
 
       </div>
