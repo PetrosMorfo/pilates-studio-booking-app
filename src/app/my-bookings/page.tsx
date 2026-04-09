@@ -65,7 +65,7 @@ export default async function MyBookingsPage() {
           <p className="pf-eyebrow">{t('my_eyebrow')}</p>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem' }}>
             <h1 style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Playfair Display', serif",
               fontSize: '3.25rem',
               fontWeight: 300,
               lineHeight: 1.1,
@@ -80,7 +80,7 @@ export default async function MyBookingsPage() {
             {/* Credits display */}
             <div style={{ textAlign: 'right', paddingBottom: '0.25rem', flexShrink: 0 }}>
               <div style={{
-                fontFamily: "'Cormorant Garamond', serif",
+                fontFamily: "'Playfair Display', serif",
                 fontSize: '3rem',
                 fontWeight: 300,
                 lineHeight: 1,
@@ -133,7 +133,7 @@ export default async function MyBookingsPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
                       <span style={{
-                        fontFamily: "'Cormorant Garamond', serif",
+                        fontFamily: "'Playfair Display', serif",
                         fontSize: '1.1rem',
                         color: 'var(--fg)',
                         lineHeight: 1.2,
@@ -184,7 +184,7 @@ export default async function MyBookingsPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
                       <span style={{
-                        fontFamily: "'Cormorant Garamond', serif",
+                        fontFamily: "'Playfair Display', serif",
                         fontSize: '1.1rem',
                         color: 'var(--fg)',
                       }}>

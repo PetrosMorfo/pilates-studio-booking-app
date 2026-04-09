@@ -78,7 +78,7 @@ export default async function PilatesPage() {
         <div style={{ marginBottom: '2.75rem' }}>
           <p className="pf-eyebrow">{t('home_eyebrow')}</p>
           <h1 style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Playfair Display', serif",
             fontSize: '3.25rem',
             fontWeight: 300,
             lineHeight: 1.1,
@@ -105,7 +105,7 @@ export default async function PilatesPage() {
                 border: `1px solid ${creditBorder}`,
               }}>
                 <span style={{
-                  fontFamily: "'Cormorant Garamond', serif",
+                  fontFamily: "'Playfair Display', serif",
                   fontSize: '1.25rem',
                   fontWeight: 300,
                   lineHeight: 1,
@@ -166,7 +166,7 @@ export default async function PilatesPage() {
                         {/* Time column */}
                         <div style={{ width: '68px', flexShrink: 0 }}>
                           <div style={{
-                            fontFamily: "'Cormorant Garamond', serif",
+                            fontFamily: "'Playfair Display', serif",
                             fontSize: '1.35rem',
                             fontWeight: 400,
                             color: 'var(--fg)',
@@ -185,7 +185,7 @@ export default async function PilatesPage() {
                         {/* Class info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
-                            fontFamily: "'Cormorant Garamond', serif",
+                            fontFamily: "'Playfair Display', serif",
                             fontSize: '1.1rem',
                             fontWeight: 400,
                             color: 'var(--fg)',

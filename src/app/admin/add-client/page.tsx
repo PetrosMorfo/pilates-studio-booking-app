@@ -48,7 +48,7 @@ export default function AddClientPage() {
           <div style={{ marginBottom: '2.5rem' }}>
             <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
             <h1 style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Playfair Display', serif",
               fontSize: '3.25rem',
               fontWeight: 300,
               lineHeight: 1.1,

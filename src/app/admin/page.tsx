@@ -1,7 +1,7 @@
 import Header from '@/components/Header'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import DeleteClassButton from '@/components/DeleteClassButton'
+import AdminClassCalendar from '@/components/AdminClassCalendar'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -51,7 +51,6 @@ export default async function AdminDashboard() {
   ])
 
   const upcoming = classes.filter(c => new Date(c.startTime) >= now)
-  const past = classes.filter(c => new Date(c.startTime) < now)
   const totalBookings = upcoming.reduce((acc, c) => acc + c.bookings.length, 0)
   const totalCredits = clients.reduce((a, c) => a + c.credits, 0)
 
@@ -66,7 +65,7 @@ export default async function AdminDashboard() {
             <div>
               <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
               <h1 style={{
-                fontFamily: "'Cormorant Garamond', serif",
+                fontFamily: "'Playfair Display', serif",
                 fontSize: '3.25rem',
                 fontWeight: 300,
                 lineHeight: 1.1,
@@ -112,93 +111,25 @@ export default async function AdminDashboard() {
             </div>
           </div>
 
-          {/* Upcoming Classes */}
+          {/* Classes Calendar */}
           <div style={{ marginBottom: '2.5rem' }}>
             <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
               <span className="pf-section-label">{t('admin_classes_section')}</span>
             </div>
-
-            {upcoming.length === 0 ? (
-              <div className="pf-empty">
-                <p className="pf-empty-title">{t('admin_no_classes')}</p>
-                <Link href="/admin/add-class" className="pf-link">+ {t('admin_add_class')} →</Link>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {upcoming.map(cls => (
-                  <div
-                    key={cls.id}
-                    style={{
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius)',
-                      padding: '0.9rem 1.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '1rem',
-                      transition: 'border-color 0.15s, box-shadow 0.15s',
-                    }}
-                  >
-                    {/* Date block */}
-                    <div style={{ width: '38px', flexShrink: 0, textAlign: 'center' }}>
-                      <div style={{ fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-light)' }}>
-                        {new Date(cls.startTime).toLocaleDateString(locale, { month: 'short' })}
-                      </div>
-                      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.8rem', lineHeight: 1, color: 'var(--fg)' }}>
-                        {new Date(cls.startTime).getDate()}
-                      </div>
-                    </div>
-
-                    <div style={{ width: '1px', height: '36px', background: 'var(--border-lt)', flexShrink: 0 }} />
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                        <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', color: 'var(--fg)' }}>
-                          {cls.name}
-                        </span>
-                        <span className={cls.type === 'ONLINE' ? 'pf-badge pf-badge-sage' : 'pf-badge pf-badge-blush'}>
-                          {cls.type === 'ONLINE' ? t('class_online') : t('class_studio')}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
-                        {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
-                        {cls.instructor}
-                        {cls.bookings.length > 0 && (
-                          <>
-                            <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
-                            <span style={{ color: 'var(--fg-light)' }}>
-                              {cls.bookings.map(b => b.user.name || b.user.email).join(', ')}
-                            </span>
-                          </>
-                        )}
-                      </p>
-                    </div>
-
-                    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{
-                          fontSize: '0.9rem',
-                          fontWeight: 700,
-                          color: cls.bookings.length >= cls.capacity ? 'var(--clay)' : 'var(--forest)',
-                        }}>
-                          {cls.bookings.length}
-                        </span>
-                        <span style={{ fontSize: '0.9rem', color: 'var(--border)', fontWeight: 400 }}>
-                          /{cls.capacity}
-                        </span>
-                        {cls.waitlist.length > 0 && (
-                          <div style={{ fontSize: '0.62rem', color: 'var(--clay)', marginTop: '0.1rem' }}>
-                            +{cls.waitlist.length} {t('admin_waitlisted')}
-                          </div>
-                        )}
-                      </div>
-                      <DeleteClassButton classId={cls.id} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <AdminClassCalendar
+              classes={classes.map(cls => ({
+                id: cls.id,
+                name: cls.name,
+                startTime: cls.startTime.toISOString(),
+                endTime: cls.endTime.toISOString(),
+                instructor: cls.instructor,
+                type: cls.type,
+                capacity: cls.capacity,
+                bookings: cls.bookings.map(b => ({ user: { name: b.user.name, email: b.user.email } })),
+                waitlist: cls.waitlist.map(w => ({ id: w.id })),
+              }))}
+              locale={locale}
+            />
           </div>
 
           {/* Clients */}
@@ -240,36 +171,6 @@ export default async function AdminDashboard() {
             </div>
           </div>
 
-          {/* Past Classes */}
-          {past.length > 0 && (
-            <div>
-              <div className="pf-section-rule" style={{ marginBottom: '0.75rem' }}>
-                <span className="pf-section-label" style={{ color: 'var(--fg-light)' }}>{t('admin_past_classes')}</span>
-              </div>
-              <div className="pf-panel" style={{ opacity: 0.6 }}>
-                {past.slice().reverse().slice(0, 8).map((cls) => (
-                  <div key={cls.id} className="pf-row">
-                    <div className="pf-row-main">
-                      <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {cls.name}
-                        <span className={cls.type === 'ONLINE' ? 'pf-badge pf-badge-sage' : 'pf-badge pf-badge-blush'}>
-                          {cls.type === 'ONLINE' ? t('class_online') : t('class_studio')}
-                        </span>
-                      </strong>
-                      <span>
-                        {new Date(cls.startTime).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
-                        <span style={{ margin: '0 0.35rem', color: 'var(--border)' }}>·</span>
-                        {cls.bookings.length} {t('attendance_booked')}
-                      </span>
-                    </div>
-                    <div className="pf-row-aside">
-                      <DeleteClassButton classId={cls.id} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
         </div>
       </div>

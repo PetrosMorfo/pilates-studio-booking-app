@@ -71,7 +71,7 @@ export default function LoginPage() {
         {/* Card */}
         <div className="pf-auth-card">
           <h2 style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Playfair Display', serif",
             fontSize: '1.75rem',
             fontWeight: 400,
             color: 'var(--fg)',

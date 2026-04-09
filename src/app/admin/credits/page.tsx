@@ -68,7 +68,7 @@ export default async function AdminCreditsPage() {
             </Link>
             <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
             <h1 style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Playfair Display', serif",
               fontSize: '3.25rem',
               fontWeight: 300,
               lineHeight: 1.1,
@@ -105,7 +105,7 @@ export default async function AdminCreditsPage() {
                       {/* Client info + transaction log */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
-                          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.25rem', color: 'var(--fg)', fontWeight: 400 }}>
+                          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: 'var(--fg)', fontWeight: 400 }}>
                             {client.name || '(no name)'}
                           </span>
                           <span style={{ fontSize: '0.72rem', color: 'var(--fg-light)' }}>{client.email}</span>
@@ -113,7 +113,7 @@ export default async function AdminCreditsPage() {
 
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', marginBottom: '0.85rem' }}>
                           <span style={{
-                            fontFamily: "'Cormorant Garamond', serif",
+                            fontFamily: "'Playfair Display', serif",
                             fontSize: '2rem',
                             fontWeight: 300,
                             lineHeight: 1,

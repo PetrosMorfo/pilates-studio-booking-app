@@ -101,7 +101,7 @@ export default function AddClassPage() {
 
     setLoading(false)
     if (result.success) {
-      router.push('/admin')
+      window.location.href = '/admin'
     } else {
       setError(result.error ?? t('add_class_no_match'))
     }
@@ -138,7 +138,7 @@ export default function AddClassPage() {
             </Link>
             <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
             <h1 style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Playfair Display', serif",
               fontSize: '2.75rem',
               fontWeight: 300,
               lineHeight: 1.1,
@@ -402,7 +402,7 @@ export default function AddClassPage() {
                       gap: '0.5rem',
                     }}>
                       <span style={{
-                        fontFamily: "'Cormorant Garamond', serif",
+                        fontFamily: "'Playfair Display', serif",
                         fontSize: '1.6rem',
                         fontWeight: 400,
                         color: 'var(--forest)',

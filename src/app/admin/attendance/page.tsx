@@ -61,7 +61,7 @@ export default async function AttendancePage() {
             </Link>
             <p className="pf-eyebrow">{t('admin_eyebrow')}</p>
             <h1 style={{
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Playfair Display', serif",
               fontSize: '3.25rem',
               fontWeight: 300,
               lineHeight: 1.1,
@@ -76,7 +76,7 @@ export default async function AttendancePage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '3.5rem' }}>
             {upcoming.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '5rem 0', border: '1px dashed var(--border)', borderRadius: 'var(--radius-lg)' }}>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', color: 'var(--border)' }}>{t('attendance_no_classes')}</p>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', color: 'var(--border)' }}>{t('attendance_no_classes')}</p>
               </div>
             ) : (
               upcoming.map(cls => <ClassCard key={cls.id} cls={cls} locale={locale} />)
@@ -133,7 +133,7 @@ function ClassCard({ cls, isPast, locale }: ClassCardProps) {
       <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid var(--border-lt)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.4rem', color: 'var(--fg)', fontWeight: 400 }}>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.4rem', color: 'var(--fg)', fontWeight: 400 }}>
               {cls.name}
             </h2>
             <span className={isOnline ? 'pf-badge pf-badge-sage' : 'pf-badge pf-badge-blush'}>

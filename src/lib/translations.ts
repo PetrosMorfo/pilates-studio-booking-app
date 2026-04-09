@@ -134,6 +134,16 @@ export const translations = {
     add_class_submit_multi: 'Create {n} Classes',
     add_class_creating: 'Creating…',
 
+    // Edit class page
+    edit_class_heading: 'Edit',
+    edit_class_heading_em: 'Class',
+    edit_class_submit: 'Save Changes',
+    edit_class_saving: 'Saving…',
+    edit_class_back: 'Back to Dashboard',
+
+    // Admin calendar
+    admin_edit: 'Edit',
+
     // Admin attendance page
     attendance_heading: 'Class',
     attendance_heading_em: 'attendance',
@@ -329,6 +339,16 @@ export const translations = {
     add_class_submit_single: 'Δημιουργία Μαθήματος',
     add_class_submit_multi: 'Δημιουργία {n} Μαθημάτων',
     add_class_creating: 'Δημιουργία…',
+
+    // Edit class page
+    edit_class_heading: 'Επεξεργασία',
+    edit_class_heading_em: 'Μαθήματος',
+    edit_class_submit: 'Αποθήκευση',
+    edit_class_saving: 'Αποθήκευση…',
+    edit_class_back: 'Πίσω στον Πίνακα',
+
+    // Admin calendar
+    admin_edit: 'Επεξεργασία',
 
     // Admin attendance page
     attendance_heading: 'Παρουσίες',

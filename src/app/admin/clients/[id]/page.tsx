@@ -13,8 +13,8 @@ export const dynamic = 'force-dynamic'
 
 const PACKS = [
   { label: '1 class', amount: 1 },
+  { label: '4 classes', amount: 4 },
   { label: '8 classes', amount: 8 },
-  { label: '30 classes', amount: 30 },
 ]
 
 export default async function ClientHistoryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -106,7 +106,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
             <div>
               <p className="pf-eyebrow">{t('client_eyebrow')}</p>
               <h1 style={{
-                fontFamily: "'Cormorant Garamond', serif",
+                fontFamily: "'Playfair Display', serif",
                 fontSize: '3.25rem',
                 fontWeight: 300,
                 lineHeight: 1.1,
@@ -133,7 +133,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
               flexShrink: 0,
             }}>
               <div style={{
-                fontFamily: "'Cormorant Garamond', serif",
+                fontFamily: "'Playfair Display', serif",
                 fontSize: '3.5rem',
                 fontWeight: 300,
                 lineHeight: 1,

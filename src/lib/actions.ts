@@ -529,3 +529,48 @@ export async function adminInviteUser(name: string, email: string) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to invite user' }
   }
 }
+
+export async function updateClass(classId: string, formData: {
+  name: string
+  instructor: string
+  startTime: string
+  durationMinutes: number
+  capacity: number
+  type: 'IN_PERSON' | 'ONLINE'
+}) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    const capacity = Number(formData.capacity)
+    if (!Number.isInteger(capacity) || capacity < 1 || capacity > 100) {
+      throw new Error('Capacity must be between 1 and 100.')
+    }
+
+    const durationMinutes = Number(formData.durationMinutes)
+    if (![45, 60, 75, 90].includes(durationMinutes)) {
+      throw new Error('Invalid duration.')
+    }
+
+    const start = new Date(formData.startTime)
+    if (isNaN(start.getTime())) throw new Error('Invalid start time.')
+    const end = new Date(start.getTime() + durationMinutes * 60 * 1000)
+
+    await prisma.pilatesClass.update({
+      where: { id: classId },
+      data: {
+        name: formData.name.trim(),
+        instructor: formData.instructor.trim(),
+        startTime: start,
+        endTime: end,
+        capacity,
+        type: formData.type,
+      },
+    })
+    revalidatePath('/')
+    revalidatePath('/admin')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update class' }
+  }
+}
