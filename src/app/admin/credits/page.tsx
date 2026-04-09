@@ -12,8 +12,8 @@ export const dynamic = 'force-dynamic'
 
 const PACKS = [
   { labelKey: '1 class', amount: 1 },
+  { labelKey: '4 classes', amount: 4 },
   { labelKey: '8 classes', amount: 8 },
-  { labelKey: '30 classes', amount: 30 },
 ]
 
 export default async function AdminCreditsPage() {
