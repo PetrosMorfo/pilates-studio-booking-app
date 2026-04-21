@@ -205,7 +205,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
                       <span>
                         {new Date(b.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
                         {' · '}
-                        {new Date(b.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                        {new Date(b.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens' })}
                       </span>
                     </div>
                     <div className="pf-row-aside">
@@ -231,7 +231,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
                       <span>
                         {new Date(w.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
                         {' · '}
-                        {new Date(w.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                        {new Date(w.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens' })}
                         {' · '}#{w.position}
                       </span>
                     </div>

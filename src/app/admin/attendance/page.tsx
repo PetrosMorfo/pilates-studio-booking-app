@@ -143,7 +143,7 @@ function ClassCard({ cls, isPast, locale }: ClassCardProps) {
           <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
             {new Date(cls.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
             <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
-            {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+            {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens' })}
           </p>
         </div>
 

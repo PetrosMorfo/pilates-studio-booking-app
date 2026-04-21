@@ -172,10 +172,10 @@ export default async function PilatesPage() {
                             color: 'var(--fg)',
                             lineHeight: 1,
                           }}>
-                            {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                            {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens' })}
                           </div>
                           <div style={{ fontSize: '0.65rem', color: 'var(--fg-light)', marginTop: '0.15rem' }}>
-                            – {endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                            – {endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens' })}
                           </div>
                         </div>
 

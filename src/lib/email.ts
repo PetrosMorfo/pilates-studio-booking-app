@@ -56,7 +56,7 @@ export async function sendReminderEmail({
     weekday: 'long', month: 'long', day: 'numeric'
   })
   const timeStr = startTime.toLocaleTimeString([], {
-    hour: '2-digit', minute: '2-digit', hour12: false
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens'
   })
 
   await sendEmail({
