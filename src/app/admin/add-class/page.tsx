@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClass, createManyClasses } from '@/lib/actions'
 import Link from 'next/link'
 import Header from '@/components/Header'
@@ -24,9 +23,18 @@ const WEEKDAYS = [
   { label: 'Sun', value: 0 },
 ]
 
+const MINUTES = [0, 15, 30, 45]
+const HOURS = Array.from({ length: 24 }, (_, i) => i)
+const pad = (n: number) => String(n).padStart(2, '0')
+
+// Convert local date+hour+minute to a UTC ISO string so the server stores
+// the correct moment regardless of what timezone Vercel runs in.
+function toUtcISO(dateStr: string, hour: number, minute: number): string {
+  return new Date(`${dateStr}T${pad(hour)}:${pad(minute)}:00`).toISOString()
+}
+
 export default function AddClassPage() {
   const { t } = useLanguage()
-  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mode, setMode] = useState<'single' | 'recurring'>('single')
@@ -38,32 +46,34 @@ export default function AddClassPage() {
   const [instructor, setInstructor] = useState('')
   const [capacity, setCapacity] = useState(4)
 
-  // Single mode
-  const [startTime, setStartTime] = useState('')
+  // Single mode: date + hour + minute
+  const [singleDate, setSingleDate] = useState('')
+  const [singleHour, setSingleHour] = useState(9)
+  const [singleMinute, setSingleMinute] = useState(0)
 
-  // Recurring mode
+  // Recurring mode: hour + minute + days + date range
+  const [classHour, setClassHour] = useState(9)
+  const [classMinute, setClassMinute] = useState(0)
   const [days, setDays] = useState<Set<number>>(new Set())
-  const [classTime, setClassTime] = useState('')
   const [rangeStart, setRangeStart] = useState('')
   const [rangeEnd, setRangeEnd] = useState('')
 
   const occurrences = useMemo<string[]>(() => {
-    if (days.size === 0 || !classTime || !rangeStart || !rangeEnd) return []
+    if (days.size === 0 || !rangeStart || !rangeEnd) return []
     const start = new Date(rangeStart + 'T00:00:00')
     const end = new Date(rangeEnd + 'T00:00:00')
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return []
     const result: string[] = []
     const current = new Date(start)
-    const pad = (n: number) => String(n).padStart(2, '0')
     while (current <= end && result.length < 200) {
       if (days.has(current.getDay())) {
         const dateStr = `${current.getFullYear()}-${pad(current.getMonth() + 1)}-${pad(current.getDate())}`
-        result.push(`${dateStr}T${classTime}`)
+        result.push(toUtcISO(dateStr, classHour, classMinute))
       }
       current.setDate(current.getDate() + 1)
     }
     return result
-  }, [days, classTime, rangeStart, rangeEnd])
+  }, [days, classHour, classMinute, rangeStart, rangeEnd])
 
   const toggleDay = (day: number) => {
     setDays(prev => {
@@ -92,6 +102,7 @@ export default function AddClassPage() {
 
     let result
     if (mode === 'single') {
+      const startTime = toUtcISO(singleDate, singleHour, singleMinute)
       result = await createClass({ name, instructor, startTime, durationMinutes, capacity, type })
     } else {
       result = await createManyClasses(
@@ -120,6 +131,59 @@ export default function AddClassPage() {
   const capacityHint = type === 'IN_PERSON'
     ? t('add_class_capacity_hint', { hint: t('add_class_capacity_hint_in') })
     : t('add_class_capacity_hint', { hint: t('add_class_capacity_hint_online') })
+
+  const selectStyle: React.CSSProperties = {
+    padding: '0.65rem 0.9rem',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-sm)',
+    background: 'var(--bg)',
+    color: 'var(--fg)',
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '0.9rem',
+    outline: 'none',
+    cursor: 'pointer',
+    appearance: 'none' as const,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23919682' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 0.75rem center',
+    paddingRight: '2.25rem',
+  }
+
+  const minutePillStyle = (active: boolean): React.CSSProperties => ({
+    flex: 1,
+    padding: '0.65rem 0.5rem',
+    borderRadius: 'var(--radius-sm)',
+    border: `2px solid ${active ? 'var(--sage)' : 'var(--border)'}`,
+    background: active ? 'var(--accent-bg)' : 'var(--bg)',
+    color: active ? 'var(--forest)' : 'var(--fg-muted)',
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '0.82rem',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    textAlign: 'center' as const,
+  })
+
+  const TimePicker = ({ hour, minute, onHour, onMinute }: {
+    hour: number; minute: number
+    onHour: (h: number) => void; onMinute: (m: number) => void
+  }) => (
+    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <select value={hour} onChange={e => onHour(Number(e.target.value))} style={{ ...selectStyle, width: '90px' }}>
+        {HOURS.map(h => (
+          <option key={h} value={h}>{pad(h)}</option>
+        ))}
+      </select>
+      <span style={{ fontSize: '1.1rem', color: 'var(--fg-muted)', fontWeight: 700, flexShrink: 0 }}>:</span>
+      <div style={{ display: 'flex', gap: '0.35rem', flex: 1 }}>
+        {MINUTES.map(m => (
+          <button key={m} type="button" onClick={() => onMinute(m)} style={minutePillStyle(minute === m)}>
+            {pad(m)}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <>
@@ -303,21 +367,27 @@ export default function AddClassPage() {
               {/* Divider */}
               <div style={{ borderTop: '1px solid var(--border-lt)', margin: '0.25rem 0' }} />
 
-              {/* ── Single mode: one datetime picker ── */}
+              {/* ── Single mode ── */}
               {mode === 'single' && (
                 <div className="pf-field">
                   <label className="pf-label">{t('add_class_datetime')}</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={startTime}
-                    onChange={e => setStartTime(e.target.value)}
-                    className="pf-input"
-                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <input
+                      type="date"
+                      required
+                      value={singleDate}
+                      onChange={e => setSingleDate(e.target.value)}
+                      className="pf-input"
+                    />
+                    <TimePicker
+                      hour={singleHour} minute={singleMinute}
+                      onHour={setSingleHour} onMinute={setSingleMinute}
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* ── Recurring mode: days + time + date range ── */}
+              {/* ── Recurring mode ── */}
               {mode === 'recurring' && (
                 <>
                   <div className="pf-field">
@@ -351,12 +421,9 @@ export default function AddClassPage() {
 
                   <div className="pf-field">
                     <label className="pf-label">{t('add_class_time')}</label>
-                    <input
-                      type="time"
-                      required
-                      value={classTime}
-                      onChange={e => setClassTime(e.target.value)}
-                      className="pf-input"
+                    <TimePicker
+                      hour={classHour} minute={classMinute}
+                      onHour={setClassHour} onMinute={setClassMinute}
                     />
                   </div>
 
@@ -426,7 +493,7 @@ export default function AddClassPage() {
                     </div>
                   )}
 
-                  {rangeStart && rangeEnd && days.size > 0 && classTime && occurrences.length === 0 && (
+                  {rangeStart && rangeEnd && days.size > 0 && occurrences.length === 0 && (
                     <div style={{
                       padding: '0.65rem 1rem',
                       borderRadius: 'var(--radius-sm)',

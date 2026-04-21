@@ -105,7 +105,7 @@ export function AdminBookingActions({ bookingId, upcomingClasses }: BookingActio
               <option key={cls.id} value={cls.id}>
                 {new Date(cls.startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                 {' '}
-                {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                 {' — '}{cls.name}
                 {cls.spotsLeft === 0 ? ' (full)' : ` (${cls.spotsLeft} left)`}
               </option>
@@ -302,7 +302,7 @@ export function AdminAddToClass({ userId, upcomingClasses }: AddToClassProps) {
             <option key={cls.id} value={cls.id}>
               {new Date(cls.startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
               {' '}
-              {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date(cls.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
               {' — '}{cls.name}
               {cls.spotsLeft === 0 ? ' (full)' : ` (${cls.spotsLeft} left)`}
             </option>

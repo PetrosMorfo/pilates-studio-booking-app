@@ -150,7 +150,7 @@ export default async function MyBookingsPage() {
                     <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
                       {classTime.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
                       <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
-                      {classTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {classTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </p>
                   </div>
                   <CancelButton type="booking" id={b.id} classTime={classTime} />
@@ -197,7 +197,7 @@ export default async function MyBookingsPage() {
                     <p style={{ fontSize: '0.72rem', color: 'var(--fg-muted)' }}>
                       {new Date(w.pilatesClass.startTime).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })}
                       <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>
-                      {new Date(w.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(w.pilatesClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </p>
                   </div>
                   <CancelButton type="waitlist" id={w.id} />

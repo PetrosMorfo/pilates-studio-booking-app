@@ -228,7 +228,7 @@ export default function AdminClassCalendar({ classes, locale }: Props) {
                       {/* Time block */}
                       <div style={{ flexShrink: 0, textAlign: 'center', width: '48px' }}>
                         <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--fg)', lineHeight: 1 }}>
-                          {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                         </div>
                         <div style={{ fontSize: '0.65rem', color: 'var(--fg-light)', marginTop: '2px' }}>
                           {durationMins}′

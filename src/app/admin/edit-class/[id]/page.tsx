@@ -11,6 +11,13 @@ const CLASS_TYPES = [
   { value: 'ONLINE', labelKey: 'class_online' as const },
 ]
 const DURATIONS = [45, 60, 75, 90]
+const MINUTES = [0, 15, 30, 45]
+const HOURS = Array.from({ length: 24 }, (_, i) => i)
+const pad = (n: number) => String(n).padStart(2, '0')
+
+function toUtcISO(dateStr: string, hour: number, minute: number): string {
+  return new Date(`${dateStr}T${pad(hour)}:${pad(minute)}:00`).toISOString()
+}
 
 export default function EditClassPage() {
   const { t } = useLanguage()
@@ -26,7 +33,8 @@ export default function EditClassPage() {
   const [instructor, setInstructor] = useState('')
   const [classType, setClassType] = useState<'IN_PERSON' | 'ONLINE'>('IN_PERSON')
   const [date, setDate] = useState('')
-  const [time, setTime] = useState('')
+  const [hour, setHour] = useState(9)
+  const [minute, setMinute] = useState(0)
   const [duration, setDuration] = useState(60)
   const [capacity, setCapacity] = useState(10)
 
@@ -43,21 +51,67 @@ export default function EditClassPage() {
         const end = new Date(data.endTime)
         const mins = Math.round((end.getTime() - start.getTime()) / 60000)
         setDuration(DURATIONS.includes(mins) ? mins : 60)
-        // Format for date/time inputs
-        const localDate = start.toLocaleDateString('sv') // YYYY-MM-DD
-        const localTime = start.toTimeString().slice(0, 5) // HH:MM
-        setDate(localDate)
-        setTime(localTime)
+        setDate(start.toLocaleDateString('sv')) // YYYY-MM-DD in local tz
+        setHour(start.getHours())
+        setMinute(MINUTES.includes(start.getMinutes()) ? start.getMinutes() : 0)
         setFetching(false)
       })
       .catch(() => { setError('Failed to load class.'); setFetching(false) })
   }, [id])
 
+  const selectStyle: React.CSSProperties = {
+    padding: '0.65rem 0.9rem',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-sm)',
+    background: 'var(--bg)',
+    color: 'var(--fg)',
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '0.9rem',
+    outline: 'none',
+    cursor: 'pointer',
+    appearance: 'none' as const,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23919682' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 0.75rem center',
+    paddingRight: '2.25rem',
+  }
+
+  const minutePillStyle = (active: boolean): React.CSSProperties => ({
+    flex: 1,
+    padding: '0.65rem 0.5rem',
+    borderRadius: 'var(--radius-sm)',
+    border: `2px solid ${active ? 'var(--sage)' : 'var(--border)'}`,
+    background: active ? 'var(--accent-bg)' : 'var(--bg)',
+    color: active ? 'var(--forest)' : 'var(--fg-muted)',
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '0.82rem',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    textAlign: 'center' as const,
+  })
+
+  const TimePicker = () => (
+    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <select value={hour} onChange={e => setHour(Number(e.target.value))} style={{ ...selectStyle, width: '90px' }}>
+        {HOURS.map(h => <option key={h} value={h}>{pad(h)}</option>)}
+      </select>
+      <span style={{ fontSize: '1.1rem', color: 'var(--fg-muted)', fontWeight: 700, flexShrink: 0 }}>:</span>
+      <div style={{ display: 'flex', gap: '0.35rem', flex: 1 }}>
+        {MINUTES.map(m => (
+          <button key={m} type="button" onClick={() => setMinute(m)} style={minutePillStyle(minute === m)}>
+            {pad(m)}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    const startTime = `${date}T${time}:00`
+    const startTime = toUtcISO(date, hour, minute)
     const result = await updateClass(id, { name, instructor, startTime, durationMinutes: duration, capacity, type: classType })
     setLoading(false)
     if (result.success) {
@@ -140,14 +194,11 @@ export default function EditClassPage() {
             </div>
 
             {/* Date & Time */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <div>
-                <label style={labelStyle}>{t('add_class_datetime')}</label>
+            <div>
+              <label style={labelStyle}>{t('add_class_datetime')}</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <input type="date" style={inputStyle} required value={date} onChange={e => setDate(e.target.value)} />
-              </div>
-              <div>
-                <label style={labelStyle}>{t('add_class_time')}</label>
-                <input type="time" style={inputStyle} required value={time} onChange={e => setTime(e.target.value)} />
+                <TimePicker />
               </div>
             </div>
 
