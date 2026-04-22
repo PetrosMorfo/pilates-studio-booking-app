@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
 @import "tailwindcss";
 
 /* ── Tailwind utility extensions ── */
@@ -8,37 +8,43 @@
 }
 
 :root {
-  /* ── Evergreen Dreams palette ── */
-  --clay:       #C7A491;
-  --blush:      #EECFCA;
-  --sage:       #919682;
-  --sage-lt:    #C7CDBF;
-  --forest:     #595E48;
+  /* ── Evergreen Dreams palette — refreshed ── */
+  --clay:        #C4927B;   /* warm terracotta — booking CTA */
+  --clay-dk:     #A87A67;   /* clay hover */
+  --clay-lt:     #E8C9BE;   /* clay border */
+  --blush:       #ECC8C2;   /* soft warm pink */
+  --blush-bg:    #FAF2EF;   /* blush surface */
+  --sage:        #8D9280;   /* muted sage */
+  --sage-lt:     #BFC6B6;
+  --forest:      #555A42;   /* forest green — admin CTA */
+  --forest-dk:   #464B35;
 
   /* ── Semantic tokens ── */
-  --bg:          #F0EDE8;
-  --bg-card:     #FFFFFF;
-  --bg-dark:     #3A3D2E;
-  --bg-mid:      #EBF0EB;
-  --fg:          #3A3D2E;
-  --fg-muted:    #919682;
-  --fg-light:    #C7CDBF;
-  --fg-on-dark:  #F0EDE8;
-  --accent:      #595E48;
-  --accent-lt:   #C7CDBF;
-  --accent-bg:   #EBF0EB;
-  --blush-dk:    #C7A491;
+  --bg:          #EDE8E1;   /* warm linen */
+  --bg-card:     #FDFAF6;   /* warm white */
+  --bg-dark:     #38392B;   /* header */
+  --bg-mid:      #E8EDE5;
+  --fg:          #38392B;
+  --fg-muted:    #8D9280;
+  --fg-light:    #BFBCB0;
+  --fg-on-dark:  #EDE8E1;
+  --accent:      #555A42;
+  --accent-lt:   #BFC6B6;
+  --accent-bg:   #E8EDE5;
+  --blush-dk:    #C4927B;
   --warn:        #9E4E36;
   --warn-lt:     #F5E8E4;
-  --border:      #DDD8D0;
-  --border-lt:   #EBE6DF;
+  --border:      #DDD5C8;
+  --border-lt:   #EAE3D8;
+  --border-warm: #E3D8CC;
 
-  --radius:      10px;
-  --radius-sm:   6px;
-  --radius-lg:   14px;
+  --radius:      12px;
+  --radius-sm:   8px;
+  --radius-lg:   18px;
 
-  --shadow:      0 1px 2px rgba(58,61,46,.04), 0 4px 12px rgba(58,61,46,.06);
-  --shadow-md:   0 2px 6px rgba(58,61,46,.06), 0 8px 24px rgba(58,61,46,.09);
+  /* warm brown-tinted shadows */
+  --shadow:      0 1px 3px rgba(100,70,45,.05), 0 4px 16px rgba(100,70,45,.07);
+  --shadow-md:   0 2px 8px rgba(100,70,45,.07), 0 12px 32px rgba(100,70,45,.11);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,9 +55,9 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #F0EDE8 inset !important;
-  -webkit-text-fill-color: #3A3D2E !important;
-  caret-color: #3A3D2E;
+  -webkit-box-shadow: 0 0 0 1000px #EDE8E1 inset !important;
+  -webkit-text-fill-color: #38392B !important;
+  caret-color: #38392B;
   transition: background-color 9999s ease-in-out 0s;
 }
 
@@ -74,8 +80,8 @@ h1, h2, h3, h4 {
 /* ── Header ── */
 .pf-header {
   background: var(--bg-dark);
-  border-bottom: 1px solid rgba(240,237,232,0.08);
-  padding: 0 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 0 1.25rem;
   height: 58px;
   display: flex;
   align-items: center;
@@ -85,12 +91,16 @@ h1, h2, h3, h4 {
   z-index: 100;
 }
 
+@media (min-width: 641px) {
+  .pf-header { padding: 0 2rem; }
+}
+
 .pf-logo {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--fg-on-dark);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
 }
@@ -103,7 +113,7 @@ h1, h2, h3, h4 {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(240,237,232,0.55);
+  color: rgba(237,232,225,0.55);
   text-decoration: none;
   padding: 0.4rem 0.9rem;
   border-radius: var(--radius-sm);
@@ -112,30 +122,40 @@ h1, h2, h3, h4 {
   background: none;
   border: none;
   font-family: 'DM Sans', sans-serif;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
-.pf-nav-link:hover { color: var(--fg-on-dark); background: rgba(240,237,232,0.08); }
-
+.pf-nav-link:hover { color: var(--fg-on-dark); background: rgba(237,232,225,0.08); }
 .pf-nav-link.active { color: var(--fg-on-dark); }
 
 .pf-nav-link.signout {
-  color: rgba(238,207,202,0.75);
+  color: rgba(236,200,194,0.75);
   margin-left: 0.25rem;
-  border: 1px solid rgba(238,207,202,0.18);
+  border: 1px solid rgba(236,200,194,0.2);
 }
-.pf-nav-link.signout:hover { color: var(--blush); background: rgba(238,207,202,0.1); border-color: rgba(238,207,202,0.3); }
+.pf-nav-link.signout:hover {
+  color: var(--blush);
+  background: rgba(236,200,194,0.1);
+  border-color: rgba(236,200,194,0.35);
+}
 
 /* ── Page shell ── */
-.pf-page { max-width: 680px; margin: 0 auto; padding: 3rem 2rem 5rem; }
-.pf-page-md { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
-.pf-page-lg { max-width: 1040px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.pf-page    { max-width: 680px;  margin: 0 auto; padding: 1.75rem 1.25rem 6rem; }
+.pf-page-md { max-width: 860px;  margin: 0 auto; padding: 1.75rem 1.25rem 6rem; }
+.pf-page-lg { max-width: 1040px; margin: 0 auto; padding: 1.75rem 1.25rem 6rem; }
 
-/* ── Eyebrow label ── */
+@media (min-width: 641px) {
+  .pf-page, .pf-page-md, .pf-page-lg { padding-top: 3rem; padding-left: 2rem; padding-right: 2rem; }
+}
+
+/* ── Eyebrow label — now clay ── */
 .pf-eyebrow {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--fg-muted);
+  color: var(--clay);
   margin-bottom: 0.4rem;
 }
 
@@ -143,8 +163,10 @@ h1, h2, h3, h4 {
 .pf-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
-  padding: 0.55rem 1.2rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
   border-radius: var(--radius-sm);
   font-size: 0.7rem;
   font-weight: 600;
@@ -153,48 +175,74 @@ h1, h2, h3, h4 {
   cursor: pointer;
   text-decoration: none;
   border: none;
-  transition: all 0.15s;
+  transition: all 0.18s;
   font-family: 'DM Sans', sans-serif;
   white-space: nowrap;
   line-height: 1;
 }
 
-.pf-btn-primary { background: var(--forest); color: var(--fg-on-dark); }
-.pf-btn-primary:hover { background: #4a4f3c; box-shadow: var(--shadow-md); }
+/* Primary: clay/terracotta — warm booking CTA */
+.pf-btn-primary {
+  background: linear-gradient(160deg, var(--clay) 0%, var(--clay-dk) 100%);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(160,100,80,.2), 0 4px 12px rgba(160,100,80,.18);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.pf-btn-primary:hover {
+  background: linear-gradient(160deg, var(--clay-dk) 0%, #957060 100%);
+  box-shadow: 0 2px 6px rgba(160,100,80,.25), 0 8px 24px rgba(160,100,80,.2);
+  transform: translateY(-1px);
+}
 
+/* Forest: admin / secondary primary */
+.pf-btn-forest {
+  background: linear-gradient(160deg, var(--forest) 0%, var(--forest-dk) 100%);
+  color: var(--fg-on-dark);
+  box-shadow: 0 1px 3px rgba(60,70,40,.18), 0 4px 12px rgba(60,70,40,.14);
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.pf-btn-forest:hover {
+  background: linear-gradient(160deg, var(--forest-dk) 0%, #3c4130 100%);
+  transform: translateY(-1px);
+}
+
+/* Ghost */
 .pf-btn-ghost {
   background: var(--bg-card);
-  color: var(--fg-muted);
-  border: 1px solid var(--border);
+  color: var(--fg);
+  border: 1.5px solid var(--border-warm);
 }
-.pf-btn-ghost:hover { background: #f5f1ec; color: var(--fg); }
+.pf-btn-ghost:hover { background: #F5EEE6; border-color: var(--clay-lt); }
 
 /* ── Badges / chips ── */
 .pf-badge {
-  display: inline-block;
-  font-size: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 0.18rem 0.55rem;
-  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
   white-space: nowrap;
+  line-height: 1;
 }
-.pf-badge-sage  { background: var(--accent-bg);  color: #4a5040; }
-.pf-badge-blush { background: #FAF1EE;            color: #8a5244; }
-.pf-badge-warn  { background: var(--warn-lt);     color: var(--warn); }
-.pf-badge-dark  { background: var(--forest);      color: var(--fg-on-dark); }
+.pf-badge-sage  { background: var(--accent-bg); color: #4a5040; border: 1px solid var(--accent-lt); }
+.pf-badge-blush { background: var(--blush-bg);  color: #8a5244; border: 1px solid var(--clay-lt); }
+.pf-badge-warn  { background: var(--warn-lt);   color: var(--warn); }
+.pf-badge-dark  { background: var(--forest);    color: var(--fg-on-dark); }
+.pf-badge-clay  { background: var(--blush-bg);  color: var(--clay-dk); border: 1px solid var(--clay-lt); }
 
 /* ── Cards / panels ── */
 .pf-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-warm);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 .pf-panel {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-warm);
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -203,19 +251,20 @@ h1, h2, h3, h4 {
 .pf-row {
   display: flex;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border-lt);
   gap: 1rem;
   transition: background 0.1s;
+  min-height: 64px;
 }
 .pf-row:last-child { border-bottom: none; }
-.pf-row:hover { background: #f8f5f1; }
+.pf-row:hover { background: #F9F4EE; }
 .pf-row-main { flex: 1; min-width: 0; }
 .pf-row-main strong { display: block; font-size: 0.9rem; font-weight: 500; color: var(--fg); }
-.pf-row-main span   { font-size: 0.75rem; color: var(--fg-muted); }
+.pf-row-main span   { font-size: 0.74rem; color: var(--fg-muted); }
 .pf-row-aside { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
 
-/* ── Section divider ── */
+/* ── Section divider — label now clay ── */
 .pf-section-rule {
   display: flex;
   align-items: center;
@@ -223,11 +272,11 @@ h1, h2, h3, h4 {
   margin-bottom: 1rem;
 }
 .pf-section-label {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--fg-muted);
+  color: var(--clay);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -248,57 +297,61 @@ h1, h2, h3, h4 {
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 2.5rem;
+  box-shadow: var(--shadow);
 }
-.pf-stat { background: var(--bg-card); padding: 1.25rem 1.5rem; }
+.pf-stat { background: var(--bg-card); padding: 1.25rem 1.25rem; }
 .pf-stat-value {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Playfair Display', serif;   /* switched from Cormorant — cleaner lining figures */
   font-size: 2.75rem;
   font-weight: 300;
   line-height: 1;
   color: var(--fg);
+  font-variant-numeric: lining-nums;
+  font-feature-settings: 'lnum' 1;
 }
 .pf-stat-value.forest { color: var(--forest); }
 .pf-stat-value.sage   { color: var(--sage); }
 .pf-stat-value.clay   { color: var(--clay); }
 .pf-stat-value.warn   { color: var(--warn); }
 .pf-stat-label {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-light);
-  margin-top: 0.3rem;
+  margin-top: 0.35rem;
 }
 
 /* ── Form inputs ── */
-.pf-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.pf-field { display: flex; flex-direction: column; gap: 0.45rem; }
 .pf-label {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--fg-light);
 }
 .pf-input {
   width: 100%;
-  padding: 0.7rem 0.95rem;
-  border: 1px solid var(--border);
+  min-height: 48px;
+  padding: 0 0.95rem;
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--fg);
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 .pf-input::placeholder { color: var(--fg-light); }
 .pf-input:focus {
-  border-color: var(--sage);
+  border-color: var(--clay-lt);
   background: var(--bg-card);
-  box-shadow: 0 0 0 3px rgba(145,150,130,0.15);
+  box-shadow: 0 0 0 3px rgba(196,146,123,0.15);
 }
 .pf-input-hint {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--fg-light);
 }
 
@@ -309,13 +362,14 @@ h1, h2, h3, h4 {
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  padding: 2rem;
+  padding: 2rem 1.25rem;
 }
 .pf-auth-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-warm);
+  border-top: 3px solid var(--clay);
   border-radius: var(--radius-lg);
-  padding: 2.5rem 2.75rem;
+  padding: 2.25rem 2rem 2.5rem;
   width: 100%;
   max-width: 400px;
   box-shadow: var(--shadow-md);
@@ -323,15 +377,15 @@ h1, h2, h3, h4 {
 
 /* ── Empty state ── */
 .pf-empty {
-  border: 1.5px dashed var(--border);
+  border: 1.5px dashed var(--border-warm);
   border-radius: var(--radius);
   padding: 3rem 2rem;
   text-align: center;
   background: var(--bg-card);
 }
 .pf-empty-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.4rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
   font-style: italic;
   color: var(--fg-muted);
   margin-bottom: 0.5rem;
@@ -349,13 +403,10 @@ h1, h2, h3, h4 {
 
 /* ── Progress bar ── */
 .pf-progress { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.pf-progress-fill { height: 100%; background: var(--sage); border-radius: 2px; transition: width 0.4s; }
+.pf-progress-fill { height: 100%; background: var(--clay); border-radius: 2px; transition: width 0.4s; }
 .pf-progress-fill.full { background: var(--warn); }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .pf-stats { grid-template-columns: repeat(2, 1fr); }
-  .pf-page, .pf-page-md, .pf-page-lg { padding: 2rem 1.25rem 4rem; }
-  .pf-header { padding: 0 1.25rem; }
-  .pf-auth-card { padding: 2rem 1.5rem; }
 }
