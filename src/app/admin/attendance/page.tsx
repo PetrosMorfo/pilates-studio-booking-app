@@ -35,7 +35,6 @@ export default async function AttendancePage() {
   const t = (key: Parameters<typeof translate>[1]) => translate(lang, key)
   const locale = lang === 'gr' ? 'el-GR' : 'en-US'
 
-  const now = new Date()
   const allClasses = await prisma.pilatesClass.findMany({
     include: {
       bookings: {
@@ -46,8 +45,15 @@ export default async function AttendancePage() {
     orderBy: { startTime: 'asc' }
   })
 
-  const upcoming = allClasses.filter(c => new Date(c.startTime) >= now)
-  const past = allClasses.filter(c => new Date(c.startTime) < now)
+  // Use today's date in Athens timezone as the cutoff so that all of today's
+  // classes stay in the "upcoming" section (for check-in) even after they start.
+  const todayAthens = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Athens' }) // YYYY-MM-DD
+  const upcoming = allClasses.filter(c =>
+    new Date(c.startTime).toLocaleDateString('sv', { timeZone: 'Europe/Athens' }) >= todayAthens
+  )
+  const past = allClasses.filter(c =>
+    new Date(c.startTime).toLocaleDateString('sv', { timeZone: 'Europe/Athens' }) < todayAthens
+  )
 
   return (
     <>
