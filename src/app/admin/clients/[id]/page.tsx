@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import GrantCreditsButton from '@/components/GrantCreditsButton'
 import { AdminBookingActions, AdminWaitlistRemove, AdminAddToClass } from '@/components/AdminBookingActions'
 import DeleteUserButton from '@/components/DeleteUserButton'
+import EditUserDetails from '@/components/EditUserDetails'
 import { getLang } from '@/lib/language'
 import { translate } from '@/lib/translations'
 
@@ -122,6 +123,7 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
                 {t('client_member_since')}{' '}
                 {new Date(client.createdAt).toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
+              <EditUserDetails userId={client.id} initialName={client.name ?? ''} initialEmail={client.email} />
             </div>
 
             {/* Credit pill */}

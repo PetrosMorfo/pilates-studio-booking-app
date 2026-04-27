@@ -493,6 +493,43 @@ export async function adminRemoveFromWaitlist(waitlistId: string) {
   }
 }
 
+export async function updateUserDetails(targetUserId: string, data: { name: string; email: string }) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    const name = data.name.trim()
+    const email = data.email.trim().toLowerCase()
+    if (!name) throw new Error('Name is required.')
+    if (!email || !email.includes('@')) throw new Error('Valid email is required.')
+
+    // Update email in Supabase Auth if it changed
+    const existing = await prisma.user.findUnique({ where: { id: targetUserId } })
+    if (!existing) throw new Error('User not found.')
+
+    if (email !== existing.email) {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(targetUserId, { email })
+      if (error) throw new Error(error.message)
+    }
+
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { name, email },
+    })
+
+    revalidatePath(`/admin/clients/${targetUserId}`)
+    revalidatePath('/admin')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update user' }
+  }
+}
+
 export async function deleteUser(targetUserId: string) {
   try {
     const admin = await getAuthUser()
