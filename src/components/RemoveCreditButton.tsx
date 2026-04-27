@@ -26,19 +26,12 @@ export default function RemoveCreditButton({ userId }: { userId: string }) {
       <button
         onClick={handle}
         disabled={loading}
+        className="pf-btn pf-btn-ghost"
         style={{
-          background: 'none',
-          border: '1px solid #e8cac3',
-          borderRadius: 'var(--radius-sm)',
-          padding: '0.45rem 0.85rem',
-          fontSize: '0.72rem',
-          fontWeight: 600,
-          letterSpacing: '0.06em',
-          color: loading ? 'var(--fg-light)' : 'var(--warn)',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          fontFamily: "'DM Sans', sans-serif",
-          whiteSpace: 'nowrap',
+          color: 'var(--warn)',
+          borderColor: '#e8cac3',
           opacity: loading ? 0.5 : 1,
+          cursor: loading ? 'not-allowed' : 'pointer',
         }}
       >
         {loading ? '…' : '− 1 class'}
