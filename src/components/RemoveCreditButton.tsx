@@ -22,7 +22,7 @@ export default function RemoveCreditButton({ userId }: { userId: string }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+    <>
       <button
         onClick={handle}
         disabled={loading}
@@ -37,8 +37,8 @@ export default function RemoveCreditButton({ userId }: { userId: string }) {
         {loading ? '…' : '− 1 class'}
       </button>
       {error && (
-        <span style={{ fontSize: '0.65rem', color: 'var(--warn)' }}>{error}</span>
+        <span style={{ fontSize: '0.65rem', color: 'var(--warn)', marginLeft: '0.5rem' }}>{error}</span>
       )}
-    </div>
+    </>
   )
 }
