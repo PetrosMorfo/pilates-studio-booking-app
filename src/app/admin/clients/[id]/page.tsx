@@ -8,6 +8,7 @@ import GrantCreditsButton from '@/components/GrantCreditsButton'
 import { AdminBookingActions, AdminWaitlistRemove, AdminAddToClass } from '@/components/AdminBookingActions'
 import DeleteUserButton from '@/components/DeleteUserButton'
 import EditUserDetails from '@/components/EditUserDetails'
+import RemoveCreditButton from '@/components/RemoveCreditButton'
 import { getLang } from '@/lib/language'
 import { translate } from '@/lib/translations'
 
@@ -182,10 +183,13 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
             marginBottom: '1.5rem',
           }}>
             <p className="pf-section-label" style={{ marginBottom: '0.85rem' }}>{t('client_grant_credits')}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {PACKS.map(pack => (
-                <GrantCreditsButton key={pack.amount} userId={client.id} amount={pack.amount} label={pack.label} />
-              ))}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {PACKS.map(pack => (
+                  <GrantCreditsButton key={pack.amount} userId={client.id} amount={pack.amount} label={pack.label} />
+                ))}
+              </div>
+              <RemoveCreditButton userId={client.id} />
             </div>
           </div>
 

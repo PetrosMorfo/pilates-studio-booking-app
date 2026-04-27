@@ -493,6 +493,30 @@ export async function adminRemoveFromWaitlist(waitlistId: string) {
   }
 }
 
+export async function removeCredit(targetUserId: string) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id: targetUserId } })
+      if (!user) throw new Error('User not found.')
+      if (user.credits < 1) throw new Error('User has no credits to remove.')
+
+      await tx.user.update({ where: { id: targetUserId }, data: { credits: { decrement: 1 } } })
+      await tx.creditTransaction.create({
+        data: { userId: targetUserId, amount: -1, type: 'DEDUCTED', note: 'Manual removal by admin' }
+      })
+    })
+
+    revalidatePath('/admin/credits')
+    revalidatePath(`/admin/clients/${targetUserId}`)
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to remove credit' }
+  }
+}
+
 export async function updateUserDetails(targetUserId: string, data: { name: string; email: string }) {
   try {
     const admin = await getAuthUser()
