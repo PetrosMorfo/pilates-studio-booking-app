@@ -6,6 +6,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import GrantCreditsButton from '@/components/GrantCreditsButton'
 import { AdminBookingActions, AdminWaitlistRemove, AdminAddToClass } from '@/components/AdminBookingActions'
+import DeleteUserButton from '@/components/DeleteUserButton'
 import { getLang } from '@/lib/language'
 import { translate } from '@/lib/translations'
 
@@ -340,6 +341,11 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
               </div>
             </div>
           )}
+
+          {/* Delete profile */}
+          <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border-lt)' }}>
+            <DeleteUserButton userId={client.id} userName={client.name || client.email} />
+          </div>
 
         </div>
       </div>

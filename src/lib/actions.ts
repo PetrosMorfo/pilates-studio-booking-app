@@ -493,6 +493,31 @@ export async function adminRemoveFromWaitlist(waitlistId: string) {
   }
 }
 
+export async function deleteUser(targetUserId: string) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    // Delete from Supabase Auth first
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(targetUserId)
+    if (error) throw new Error(error.message)
+
+    // Prisma cascades handle bookings, waitlist entries, and credit transactions
+    await prisma.user.delete({ where: { id: targetUserId } })
+
+    revalidatePath('/admin')
+    revalidatePath('/admin/clients')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to delete user' }
+  }
+}
+
 export async function adminInviteUser(name: string, email: string) {
   try {
     const admin = await getAuthUser()
