@@ -468,6 +468,52 @@ export async function adminBookClass(userId: string, classId: string) {
   }
 }
 
+export async function adminBookClassRecurring(userId: string, classIds: string[]) {
+  try {
+    const admin = await getAuthUser()
+    if (!admin || admin.role !== 'ADMIN') throw new Error('Unauthorized')
+
+    let booked = 0, waitlisted = 0, skipped = 0
+
+    for (const classId of classIds) {
+      // Skip if already booked or waitlisted
+      const [existingBooking, existingWaitlist] = await Promise.all([
+        prisma.booking.findUnique({ where: { userId_pilatesClassId: { userId, pilatesClassId: classId } } }),
+        prisma.waitlist.findUnique({ where: { userId_pilatesClassId: { userId, pilatesClassId: classId } } }),
+      ])
+      if (existingBooking || existingWaitlist) { skipped++; continue }
+
+      const result = await prisma.$transaction(async (tx) => {
+        const pilatesClass = await tx.pilatesClass.findUnique({
+          where: { id: classId },
+          include: { bookings: true, waitlist: true }
+        })
+        if (!pilatesClass) return { missing: true }
+
+        const spotsLeft = pilatesClass.capacity - pilatesClass.bookings.length
+        if (spotsLeft > 0) {
+          await tx.booking.create({ data: { userId, pilatesClassId: classId } })
+          return { waitlisted: false }
+        } else {
+          const nextPosition = pilatesClass.waitlist.length + 1
+          await tx.waitlist.create({ data: { userId, pilatesClassId: classId, position: nextPosition } })
+          return { waitlisted: true }
+        }
+      })
+
+      if ('missing' in result) skipped++
+      else if (result.waitlisted) waitlisted++
+      else booked++
+    }
+
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true, booked, waitlisted, skipped }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to book classes' }
+  }
+}
+
 export async function adminRemoveFromWaitlist(waitlistId: string) {
   try {
     const admin = await getAuthUser()

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { adminCancelBooking, adminMoveBooking, adminRemoveFromWaitlist, adminBookClass } from '@/lib/actions'
+import { adminCancelBooking, adminMoveBooking, adminRemoveFromWaitlist, adminBookClass, adminBookClassRecurring } from '@/lib/actions'
 import { useLanguage } from '@/context/LanguageContext'
 
 type UpcomingClass = {
@@ -238,30 +238,74 @@ type AddToClassProps = {
   upcomingClasses: UpcomingClass[]
 }
 
+// Returns all upcoming class IDs that share the same name + day-of-week + time as the given class
+function getRecurringIds(classId: string, allClasses: UpcomingClass[]): string[] {
+  const base = allClasses.find(c => c.id === classId)
+  if (!base) return [classId]
+  const baseStart = new Date(base.startTime)
+  const baseDay = baseStart.toLocaleDateString('en', { weekday: 'short', timeZone: 'Europe/Athens' })
+  const baseTime = baseStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens' })
+  return allClasses
+    .filter(c => {
+      const s = new Date(c.startTime)
+      return (
+        c.name === base.name &&
+        s.toLocaleDateString('en', { weekday: 'short', timeZone: 'Europe/Athens' }) === baseDay &&
+        s.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Athens' }) === baseTime
+      )
+    })
+    .map(c => c.id)
+}
+
 export function AdminAddToClass({ userId, upcomingClasses }: AddToClassProps) {
   const { t } = useLanguage()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [selectedClassId, setSelectedClassId] = useState('')
+  const [recurring, setRecurring] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<string | null>(null)
+
+  const recurringIds = selectedClassId ? getRecurringIds(selectedClassId, upcomingClasses) : []
+  const hasRecurring = recurringIds.length > 1
 
   const handleAdd = async () => {
     if (!selectedClassId) return
     setLoading(true)
     setError(null)
     setResult(null)
-    const res = await adminBookClass(userId, selectedClassId)
-    setLoading(false)
-    if (res.success) {
-      const r = res as { success: true; waitlisted: boolean; position?: number }
-      setResult(r.waitlisted ? `✓ Added to waitlist (#${r.position})` : '✓ Booked')
-      setOpen(false)
-      setSelectedClassId('')
-      setTimeout(() => { setResult(null); router.refresh() }, 1500)
+
+    if (recurring && hasRecurring) {
+      const res = await adminBookClassRecurring(userId, recurringIds)
+      setLoading(false)
+      if (res.success) {
+        const r = res as { success: true; booked: number; waitlisted: number; skipped: number }
+        const parts = []
+        if (r.booked > 0) parts.push(`${r.booked} booked`)
+        if (r.waitlisted > 0) parts.push(`${r.waitlisted} waitlisted`)
+        if (r.skipped > 0) parts.push(`${r.skipped} skipped`)
+        setResult(`✓ ${parts.join(', ')}`)
+        setOpen(false)
+        setSelectedClassId('')
+        setRecurring(false)
+        setTimeout(() => { setResult(null); router.refresh() }, 2000)
+      } else {
+        setError(res.error ?? 'Failed.')
+      }
     } else {
-      setError(res.error ?? 'Failed.')
+      const res = await adminBookClass(userId, selectedClassId)
+      setLoading(false)
+      if (res.success) {
+        const r = res as { success: true; waitlisted: boolean; position?: number }
+        setResult(r.waitlisted ? `✓ Added to waitlist (#${r.position})` : '✓ Booked')
+        setOpen(false)
+        setSelectedClassId('')
+        setRecurring(false)
+        setTimeout(() => { setResult(null); router.refresh() }, 1500)
+      } else {
+        setError(res.error ?? 'Failed.')
+      }
     }
   }
 
@@ -281,11 +325,11 @@ export function AdminAddToClass({ userId, upcomingClasses }: AddToClassProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
         <select
           value={selectedClassId}
-          onChange={e => setSelectedClassId(e.target.value)}
+          onChange={e => { setSelectedClassId(e.target.value); setRecurring(false) }}
           style={{
             fontSize: '0.68rem',
             padding: '0.3rem 0.5rem',
@@ -317,13 +361,29 @@ export function AdminAddToClass({ userId, upcomingClasses }: AddToClassProps) {
           {loading ? '…' : t('client_confirm')}
         </button>
         <button
-          onClick={() => { setOpen(false); setError(null); setSelectedClassId('') }}
+          onClick={() => { setOpen(false); setError(null); setSelectedClassId(''); setRecurring(false) }}
           disabled={loading}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.65rem', color: 'var(--fg-muted)', fontFamily: "'DM Sans', sans-serif", padding: 0 }}
         >
           ✕
         </button>
       </div>
+
+      {/* Recurring option — only shown when there are multiple instances */}
+      {hasRecurring && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', userSelect: 'none' }}>
+          <input
+            type="checkbox"
+            checked={recurring}
+            onChange={e => setRecurring(e.target.checked)}
+            style={{ accentColor: 'var(--forest)', width: '13px', height: '13px', cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: '0.65rem', color: 'var(--fg-muted)', fontFamily: "'DM Sans', sans-serif" }}>
+            Book all recurring sessions ({recurringIds.length} total)
+          </span>
+        </label>
+      )}
+
       {error && <span style={{ fontSize: '0.6rem', color: 'var(--warn)' }}>{error}</span>}
     </div>
   )
