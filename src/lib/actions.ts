@@ -168,10 +168,7 @@ export async function toggleCheckIn(bookingId: string, currentStatus: boolean) {
     const newStatus = !currentStatus
 
     if (newStatus === true) {
-      // Checking IN — deduct 1 credit atomically
-      if (booking.user.credits < 1) {
-        throw new Error(`${booking.user.name || booking.user.email} has no credits remaining.`)
-      }
+      // Checking IN — deduct 1 credit (credits can go negative)
       await prisma.$transaction([
         prisma.booking.update({ where: { id: bookingId }, data: { checkedIn: true } }),
         prisma.user.update({ where: { id: booking.userId }, data: { credits: { decrement: 1 } } }),

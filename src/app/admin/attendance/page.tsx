@@ -196,8 +196,8 @@ function ClassCard({ cls, isPast, locale }: ClassCardProps) {
                     <p style={{
                       fontSize: '0.68rem',
                       marginTop: '0.1rem',
-                      color: b.user.credits === 0 ? 'var(--warn)' : 'var(--fg-light)',
-                      fontWeight: b.user.credits === 0 ? 600 : 400,
+                      color: b.user.credits <= 0 ? 'var(--warn)' : 'var(--fg-light)',
+                      fontWeight: b.user.credits <= 0 ? 600 : 400,
                     }}>
                       {b.user.credits} cr
                     </p>

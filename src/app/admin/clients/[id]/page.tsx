@@ -86,9 +86,9 @@ export default async function ClientHistoryPage({ params }: { params: Promise<{ 
   const pastBookings = client.bookings.filter(b => new Date(b.pilatesClass.startTime) < new Date())
   const futureWaitlist = client.waitlist.filter(w => new Date(w.pilatesClass.startTime) >= new Date())
 
-  const creditColor = client.credits === 0 ? 'var(--warn)' : client.credits <= 2 ? 'var(--clay)' : 'var(--forest)'
-  const creditBg = client.credits === 0 ? 'var(--warn-lt)' : client.credits <= 2 ? '#FAF1EE' : 'var(--accent-bg)'
-  const creditBorder = client.credits === 0 ? '#e8cac3' : client.credits <= 2 ? '#EECFCA' : 'var(--accent-lt)'
+  const creditColor = client.credits <= 0 ? 'var(--warn)' : client.credits <= 2 ? 'var(--clay)' : 'var(--forest)'
+  const creditBg = client.credits <= 0 ? 'var(--warn-lt)' : client.credits <= 2 ? '#FAF1EE' : 'var(--accent-bg)'
+  const creditBorder = client.credits <= 0 ? '#e8cac3' : client.credits <= 2 ? '#EECFCA' : 'var(--accent-lt)'
 
   return (
     <>
