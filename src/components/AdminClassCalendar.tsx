@@ -39,8 +39,7 @@ export default function AdminClassCalendar({ classes, locale }: Props) {
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [selectedDate, setSelectedDate] = useState<string | null>(() => {
-    // Default to today if there are classes today, otherwise null
-    return today.toISOString().slice(0, 10)
+    return today.toLocaleDateString('sv')
   })
 
   // Build a map: dateKey (YYYY-MM-DD) → classes[]
@@ -121,7 +120,7 @@ export default function AdminClassCalendar({ classes, locale }: Props) {
 
             const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
             const dayClasses = classMap[dateKey] ?? []
-            const isToday = dateKey === today.toISOString().slice(0, 10)
+            const isToday = dateKey === today.toLocaleDateString('sv')
             const isSelected = dateKey === selectedDate
             const isPast = new Date(dateKey) < today
             const hasClasses = dayClasses.length > 0
